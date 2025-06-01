@@ -1,0 +1,82 @@
+type UserId = principal;
+type Time = int;
+type Result_5 = 
+ variant {
+   Err: ApiError;
+   Ok: vec DocumentMetadata;
+ };
+type Result_4 = 
+ variant {
+   Err: ApiError;
+   Ok;
+ };
+type Result_3 = 
+ variant {
+   Err: ApiError;
+   Ok: vec nat8;
+ };
+type Result_2 = 
+ variant {
+   Err: ApiError;
+   Ok: record {
+         content: vec nat8;
+         metadata: DocumentMetadata;
+       };
+ };
+type Result_1 = 
+ variant {
+   Err: ApiError;
+   Ok: record {
+         contentType: text;
+         filename: text;
+         size: nat;
+         uploadedAt: Time;
+       };
+ };
+type Result = 
+ variant {
+   Err: ApiError;
+   Ok: DocumentMetadata;
+ };
+type DocumentMetadata = 
+ record {
+   contentType: text;
+   filename: text;
+   hash: text;
+   size: nat;
+   uploadedAt: Time;
+   uploadedBy: UserId;
+ };
+type ApiError = 
+ variant {
+   AlreadyExists;
+   InternalError: text;
+   InvalidInput: text;
+   NotFound;
+   Unauthorized;
+ };
+service : {
+  batchUploadDocuments: (uploads:
+   vec record {
+         content: vec nat8;
+         contentType: text;
+         filename: text;
+       }) -> (Result_5);
+  deleteDocument: (hash: text) -> (Result_4);
+  documentExists: (hash: text) -> (bool) query;
+  downloadDocument: (hash: text) -> (Result_3) query;
+  getDocument: (hash: text) -> (Result_2) query;
+  getDocumentMetadata: (hash: text) -> (Result) query;
+  getDocumentsByUser: (userId: UserId) -> (vec DocumentMetadata) query;
+  getFileInfo: (hash: text) -> (Result_1) query;
+  getMyDocuments: () -> (vec DocumentMetadata);
+  getRecentDocuments: (limit: nat) -> (vec DocumentMetadata) query;
+  getStorageStats: () ->
+   (record {
+      averageSize: nat;
+      totalDocuments: nat;
+      totalSize: nat;
+    }) query;
+  uploadDocument: (filename: text, contentType: text, content: vec nat8) ->
+   (Result);
+}

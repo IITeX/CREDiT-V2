@@ -1,0 +1,56 @@
+# Dockerfile for running DFX on Windows
+FROM ubuntu:22.04
+
+# Set environment variables to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Keep default Ubuntu archives (more reliable than mirrors)
+# RUN sed -i 's/archive.ubuntu.com/mirror.ubuntu.com/g' /etc/apt/sources.list && \
+#     sed -i 's/security.ubuntu.com/mirror.ubuntu.com/g' /etc/apt/sources.list
+
+# Install dependencies with retries and better error handling
+RUN apt-get update --fix-missing && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    wget \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    software-properties-common \
+    && apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    clang \
+    cmake \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Install DFX
+RUN sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+
+# Add DFX to PATH
+ENV PATH="/root/.local/share/dfx/bin:${PATH}"
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy package files first for better caching
+COPY package*.json ./
+
+# Install npm dependencies
+RUN npm install
+
+# Copy project files
+COPY . .
+
+# Expose DFX port and Next.js dev server port
+EXPOSE 4943 3000
+
+# Default command
+CMD ["bash"]

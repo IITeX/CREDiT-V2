@@ -1,0 +1,72 @@
+type VerificationStatus = 
+ variant {
+   Approved;
+   Pending;
+   Rejected;
+   UnderReview;
+ };
+type VerificationRequest = 
+ record {
+   documents: vec text;
+   id: text;
+   notes: opt text;
+   organizationName: text;
+   reviewedAt: opt Time;
+   reviewedBy: opt UserId;
+   role: UserRole;
+   status: VerificationStatus;
+   submittedAt: Time;
+   userId: UserId;
+ };
+type UserRole = 
+ variant {
+   CertificationBody;
+   Company;
+   Educational;
+   Individual;
+   NGO;
+   Platform;
+ };
+type UserId = principal;
+type Time = int;
+type Result_1 = 
+ variant {
+   Err: ApiError;
+   Ok: vec VerificationRequest;
+ };
+type Result = 
+ variant {
+   Err: ApiError;
+   Ok: VerificationRequest;
+ };
+type ApiError = 
+ variant {
+   AlreadyExists;
+   InternalError: text;
+   InvalidInput: text;
+   NotFound;
+   Unauthorized;
+ };
+service : {
+  cancelVerificationRequest: (requestId: text) -> (Result);
+  getMyVerificationRequests: () -> (vec VerificationRequest);
+  getPendingVerificationRequests: () -> (Result_1);
+  getVerificationRequest: (requestId: text) -> (Result) query;
+  getVerificationRequestsByRole: (role: UserRole) ->
+   (vec VerificationRequest) query;
+  getVerificationRequestsByStatus: (status: VerificationStatus) ->
+   (vec VerificationRequest) query;
+  getVerificationStats: () ->
+   (record {
+      approved: nat;
+      pending: nat;
+      rejected: nat;
+      total: nat;
+      underReview: nat;
+    }) query;
+  reviewVerificationRequest: (requestId: text, status: VerificationStatus,
+   notes: opt text) -> (Result);
+  startReview: (requestId: text) -> (Result);
+  submitVerificationRequest: (role: UserRole, organizationName: text,
+   documentHashes: vec text) -> (Result);
+}

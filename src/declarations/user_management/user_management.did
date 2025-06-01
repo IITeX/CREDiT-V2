@@ -1,0 +1,74 @@
+type VerificationStatus = 
+ variant {
+   Approved;
+   Pending;
+   Rejected;
+   UnderReview;
+ };
+type UserRole = 
+ variant {
+   CertificationBody;
+   Company;
+   Educational;
+   Individual;
+   NGO;
+   Platform;
+ };
+type UserId = principal;
+type UserFilter = 
+ record {
+   organizationName: opt text;
+   role: opt UserRole;
+   verificationStatus: opt VerificationStatus;
+ };
+type User = 
+ record {
+   createdAt: Time;
+   documentsSubmitted: vec text;
+   email: text;
+   id: UserId;
+   organizationName: opt text;
+   role: UserRole;
+   updatedAt: Time;
+   verificationStatus: VerificationStatus;
+ };
+type Time = int;
+type Result_2 = 
+ variant {
+   Err: ApiError;
+   Ok;
+ };
+type Result_1 = 
+ variant {
+   Err: ApiError;
+   Ok: vec User;
+ };
+type Result = 
+ variant {
+   Err: ApiError;
+   Ok: User;
+ };
+type ApiError = 
+ variant {
+   AlreadyExists;
+   InternalError: text;
+   InvalidInput: text;
+   NotFound;
+   Unauthorized;
+ };
+service : {
+  addAdmin: (admin: principal) -> (Result_2);
+  getAdmins: () -> (vec principal) query;
+  getAllUsers: () -> (Result_1);
+  getMyProfile: () -> (Result);
+  getUser: (userId: UserId) -> (Result) query;
+  getUsersByFilter: (filter: UserFilter) -> (Result_1);
+  isAdminPrincipal: ("principal": principal) -> (bool) query;
+  isVerifiedVerifier: (userId: UserId) -> (bool) query;
+  registerUser: (email: text, role: UserRole, organizationName: opt text) ->
+   (Result);
+  submitVerificationDocuments: (documentHashes: vec text) -> (Result);
+  updateProfile: (email: opt text, organizationName: opt text) -> (Result);
+  updateVerificationStatus: (userId: UserId, status: VerificationStatus) ->
+   (Result);
+}

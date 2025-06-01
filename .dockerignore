@@ -1,0 +1,52 @@
+# Node modules and build outputs
+node_modules/
+.next/
+.dfx/
+build/
+dist/
+out/
+
+# Git and version control
+.git/
+.gitignore
+
+# Environment and config files
+.env*
+*.log
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Documentation and markdown files
+*.md
+!README.md
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Test files
+**/*.test.*
+**/*.spec.*
+test/
+tests/
+
+# Coverage and reports
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/

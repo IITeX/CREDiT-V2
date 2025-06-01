@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  dfx:
+    build:
+      context: .
+      dockerfile: Dockerfile.dfx
+    container_name: dresumev2-dfx
+    ports:
+      - "4943:4943"  # DFX replica port
+      - "3001:3001"  # Next.js dev server
+    volumes:
+      - .:/workspace
+      - dfx_data:/root/.local/share/dfx
+      - node_modules:/workspace/node_modules
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    environment:
+      - DFX_VERSION=0.15.2
+      - NODE_ENV=development
+      - NEXT_PUBLIC_DFX_NETWORK=local
+    command: bash
+    networks:
+      - dfx_network
+
+networks:
+  dfx_network:
+    driver: bridge
+
+volumes:
+  dfx_data:
+  node_modules:
