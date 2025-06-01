@@ -2,6 +2,8 @@
 
 A decentralized resume platform built on the Internet Computer Protocol (ICP) that enables users to create, verify, and manage professional credentials as NFTs.
 
+![image](https://github.com/user-attachments/assets/0f3c323f-d8c3-4ea3-90ea-55f3d5817bca)
+
 ## 🚀 Quick Start
 
 **New to the project?** Start here: **[docs/QUICK_START.md](./docs/QUICK_START.md)** ⚡
