@@ -24,6 +24,10 @@ interface AuthContextType extends AuthState {
   refreshAuth: () => Promise<void>
 }
 
+interface AuthProviderProps {
+  children: ReactNode
+}
+
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export const useAuth = () => {

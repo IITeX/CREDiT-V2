@@ -127,13 +127,36 @@ function DashboardContentDirect() {
               <div>
                 <p className="font-medium text-blue-800">Development Mode - Direct Dashboard Access</p>
                 <p className="text-sm text-blue-700">
-                  This is a direct access to the dashboard bypassing authentication checks.
-                  Use this to test the new layout while we fix the backend integration.
+                  This page shows the UI layout. To create actual credentials, you need to authenticate first.
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Authentication Notice */}
+        {!principal && (
+          <Card className="border-yellow-200 bg-yellow-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-5 w-5 text-yellow-600" />
+                  <div>
+                    <p className="font-medium text-yellow-800">Authentication Required</p>
+                    <p className="text-sm text-yellow-700">
+                      To create real credentials, please authenticate with Internet Identity.
+                    </p>
+                  </div>
+                </div>
+                <Button asChild variant="outline" className="border-yellow-300 text-yellow-700 hover:bg-yellow-100">
+                  <Link href="/setup-admin">
+                    Login & Setup
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <DashboardMainContent
           user={displayUser}

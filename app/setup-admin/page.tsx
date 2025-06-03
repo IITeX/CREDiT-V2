@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/auth-context"
 import { useUserManagement } from "@/hooks/useIC"
 import { LoginButton } from "@/components/auth/login-button"
+import { enableDevLogin } from "@/lib/auth"
 import { 
   Shield, 
   CheckCircle, 
@@ -19,15 +20,55 @@ import {
 } from "lucide-react"
 
 export default function AdminSetupPage() {
-  const { isAuthenticated, principal } = useAuth()
+  const { isAuthenticated, principal, refreshAuth } = useAuth()
   const { registerUser, getMyProfile, updateVerificationStatus, getAllUsers } = useUserManagement()
-  
+
   const [isLoading, setIsLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'checking' | 'registering' | 'approving' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
   const [userInfo, setUserInfo] = useState<any>(null)
 
   const ADMIN_PRINCIPAL = "g5pqo-7ihb2-4vqek-pou4f-pauhm-tfylr-qcvnb-f5fnp-lfjs5-i7xtv-pae"
+
+  const clearAuthAndRestart = async () => {
+    setIsLoading(true)
+    setMessage('Clearing authentication state...')
+
+    try {
+      // Clear any existing auth state
+      localStorage.removeItem('dev_principal')
+      await refreshAuth()
+      setMessage('Authentication cleared. You can now start fresh.')
+    } catch (error) {
+      console.error('Clear auth error:', error)
+      setMessage('❌ Failed to clear auth state.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const useDevLogin = async () => {
+    setIsLoading(true)
+    setMessage('Setting up dev login...')
+
+    try {
+      // Use the current principal from the page (the one shown in the UI)
+      const currentPrincipal = "g5pqo-7ihb2-4vqek-pou4f-pauhm-tfylr-qcvnb-f5fnp-lfjs5-i7xtv-pae"
+
+      if (enableDevLogin(currentPrincipal)) {
+        setMessage('Dev login enabled! Refreshing authentication...')
+        await refreshAuth()
+        setMessage('✅ Dev login successful! You can now register your identity.')
+      } else {
+        setMessage('❌ Failed to enable dev login.')
+      }
+    } catch (error) {
+      console.error('Dev login error:', error)
+      setMessage('❌ Dev login failed.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const checkUserStatus = async () => {
     if (!principal) return
@@ -183,10 +224,26 @@ export default function AdminSetupPage() {
                 <Alert>
                   <Shield className="h-4 w-4" />
                   <AlertDescription>
-                    Please login with Internet Identity to continue
+                    Please login with Internet Identity to continue, or use dev login for testing
                   </AlertDescription>
                 </Alert>
-                <LoginButton className="w-full" />
+                <div className="space-y-2">
+                  <LoginButton className="w-full" />
+                  <div className="text-sm text-gray-500">or</div>
+                  <Button
+                    onClick={useDevLogin}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Settings className="h-4 w-4 mr-2" />
+                    )}
+                    Use Dev Login (Testing)
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -292,6 +349,22 @@ export default function AdminSetupPage() {
                         <a href="/admin">Go to Admin Panel</a>
                       </Button>
                     </div>
+                  )}
+
+                  {status === 'error' && (
+                    <Button
+                      onClick={clearAuthAndRestart}
+                      disabled={isLoading}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Settings className="h-4 w-4 mr-2" />
+                      )}
+                      Clear Auth & Start Fresh
+                    </Button>
                   )}
                 </div>
               </div>

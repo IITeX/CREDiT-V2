@@ -25,13 +25,85 @@ type StorageActor = any
 
 // Mock functions for simulation mode
 const createMockActor = (actorType: string) => {
+  const generateTokenId = () => {
+    const types = ['CS', 'WE', 'ED', 'AC', 'PR', 'SK']
+    const type = types[Math.floor(Math.random() * types.length)]
+    const year = new Date().getFullYear()
+    const num = String(Math.floor(Math.random() * 1000)).padStart(3, '0')
+    return `${type}-${year}-${num}`
+  }
+
+  const createMockCredential = (title = 'Mock AWS Solutions Architect') => ({
+    id: 'mock-credential-' + Date.now(),
+    title,
+    description: 'Mock professional cloud architecture certification',
+    tokenId: generateTokenId(),
+    issuer: 'mock-issuer-principal',
+    recipient: 'mock-recipient',
+    recipientName: 'Mock User',
+    issuedAt: BigInt(Date.now() * 1000000),
+    expiresAt: [],
+    isRevoked: false,
+    credentialType: { Certification: null },
+    metadata: [
+      ['issuer', 'Amazon Web Services'],
+      ['date', new Date().toISOString().split('T')[0]],
+      ['type', 'certificate']
+    ],
+    documentHash: [],
+    blockchainTxId: []
+  })
+
+  const createMockNFT = (credential: any) => ({
+    tokenId: credential.tokenId,
+    owner: 'mock-owner-principal',
+    createdAt: BigInt(Date.now() * 1000000),
+    metadata: {
+      name: credential.title,
+      description: credential.description,
+      image: 'https://example.com/credential.png',
+      credentialId: credential.id,
+      issuer: 'Amazon Web Services',
+      recipient: credential.recipientName,
+      issuedAt: credential.issuedAt,
+      attributes: [
+        ['type', 'Certification'],
+        ['level', 'Professional']
+      ]
+    }
+  })
+
   const mockActor = {
-    registerUser: async () => ({ Ok: { id: 'mock-user-id', email: 'test@example.com', role: { Individual: null } } }),
-    getMyProfile: async () => ({ Ok: { id: 'mock-user-id', email: 'test@example.com', role: { Individual: null } } }),
-    createCredential: async () => ({ Ok: 'mock-credential-id' }),
-    getCredentialsByRecipient: async () => [{ id: 'mock-credential-1', title: 'Mock Credential' }],
+    registerUser: async () => ({ Ok: { id: 'mock-user-id', email: 'admin@dresume.app', role: { Company: null }, verificationStatus: { Approved: null } } }),
+    getMyProfile: async () => ({ Ok: { id: 'mock-user-id', email: 'admin@dresume.app', role: { Company: null }, verificationStatus: { Approved: null } } }),
+    createCredential: async (credentialType: any, title: string) => {
+      const credential = createMockCredential(title)
+      const nft = createMockNFT(credential)
+      console.log('Mock credential created with token ID:', credential.tokenId)
+      return { Ok: [credential, nft] }
+    },
+    getCredentialsByRecipient: async () => [createMockCredential()],
+    getCredentialByToken: async (tokenId: string) => {
+      if (tokenId.match(/^[A-Z]{2}-\d{4}-\d{3}$/)) {
+        const credential = createMockCredential()
+        credential.tokenId = tokenId
+        return { Ok: credential }
+      }
+      return { Err: { NotFound: null } }
+    },
+    getNFT: async (tokenId: string) => {
+      if (tokenId.match(/^[A-Z]{2}-\d{4}-\d{3}$/)) {
+        const credential = createMockCredential()
+        credential.tokenId = tokenId
+        const nft = createMockNFT(credential)
+        return { Ok: nft }
+      }
+      return { Err: { NotFound: null } }
+    },
+    searchCredentials: async () => [createMockCredential()],
     submitVerificationRequest: async () => ({ Ok: 'mock-verification-id' }),
     uploadDocument: async () => ({ Ok: 'mock-document-id' }),
+    updateVerificationStatus: async () => ({ Ok: 'mock-status-update' }),
   }
   console.log(`Created mock ${actorType} actor for simulation mode`)
   return mockActor
@@ -49,15 +121,17 @@ export const useUserManagement = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (isAuthenticated && identity) {
-      if (isSimulationMode()) {
+    if (isAuthenticated) {
+      // Check if we're in simulation mode or dev login (no identity)
+      if (isSimulationMode() || !identity) {
+        console.log('🔧 Using mock actor for user management (simulation mode or dev login)')
         setActor(createMockActor('UserManagement'))
         return
       }
-      
+
       if (userManagementIdl) {
         const agent = new HttpAgent({ host: HOST, identity })
-        
+
         if (process.env.NODE_ENV !== 'production') {
           agent.fetchRootKey().catch(console.error)
         }
@@ -68,6 +142,8 @@ export const useUserManagement = () => {
         })
         setActor(actor)
       }
+    } else {
+      setActor(null)
     }
   }, [isAuthenticated, identity])
 
@@ -107,7 +183,39 @@ export const useUserManagement = () => {
     }
   }, [actor])
 
-  return { user, registerUser, getMyProfile, loading }
+  const updateVerificationStatus = useCallback(async (
+    userPrincipal: string,
+    status: any
+  ) => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      const result = await actor.updateVerificationStatus(
+        Principal.fromText(userPrincipal),
+        status
+      )
+      if ('Ok' in result) {
+        return result.Ok
+      } else {
+        throw new Error(Object.keys(result.Err)[0])
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
+  const getAllUsers = useCallback(async () => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      const result = await actor.getAllUsers()
+      return result
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
+  return { user, registerUser, getMyProfile, updateVerificationStatus, getAllUsers, loading }
 }
 
 // Credentials Hook
@@ -118,15 +226,17 @@ export const useCredentials = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (isAuthenticated && identity) {
-      if (isSimulationMode()) {
+    if (isAuthenticated) {
+      // Check if we're in simulation mode or dev login (no identity)
+      if (isSimulationMode() || !identity) {
+        console.log('🔧 Using mock actor for credentials (simulation mode or dev login)')
         setActor(createMockActor('CredentialNFT'))
         return
       }
-      
+
       if (credentialNftIdl) {
         const agent = new HttpAgent({ host: HOST, identity })
-        
+
         if (process.env.NODE_ENV !== 'production') {
           agent.fetchRootKey().catch(console.error)
         }
@@ -137,6 +247,8 @@ export const useCredentials = () => {
         })
         setActor(actor)
       }
+    } else {
+      setActor(null)
     }
   }, [isAuthenticated, identity])
 
@@ -147,27 +259,43 @@ export const useCredentials = () => {
     recipient: string,
     recipientName: string,
     metadata: any = {},
-    documentHash: number[] = [],
+    documentHash: any[] = [],
     expiresAt: any[] = []
   ) => {
     if (!actor) throw new Error('Not authenticated')
     setLoading(true)
     try {
+      // Convert metadata to array of tuples format expected by canister
+      const metadataArray = Object.entries(metadata)
+
       const result = await actor.createCredential(
         credentialType,
         title,
         description,
         recipient,
         recipientName,
-        metadata,
-        documentHash,
-        expiresAt
+        expiresAt,
+        metadataArray,
+        documentHash.length > 0 ? [documentHash[0]] : []
       )
+
       if ('Ok' in result) {
-        return result.Ok
+        console.log('Credential and NFT created successfully:', result.Ok)
+        // result.Ok contains [Credential, NFT] tuple
+        const [credential, nft] = result.Ok
+        console.log('Credential:', credential)
+        console.log('NFT Token ID:', nft.tokenId)
+
+        // Refresh credentials list
+        await getMyCredentials()
+        return { credential, nft, tokenId: nft.tokenId }
       } else {
+        console.error('Failed to create credential:', result.Err)
         throw new Error(Object.keys(result.Err)[0])
       }
+    } catch (error) {
+      console.error('Error creating credential:', error)
+      throw error
     } finally {
       setLoading(false)
     }
@@ -185,7 +313,72 @@ export const useCredentials = () => {
     }
   }, [actor, principal])
 
-  return { credentials, createCredential, getMyCredentials, loading }
+  const getCredentialByToken = useCallback(async (tokenId: string) => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      const result = await actor.getCredentialByToken(tokenId)
+
+      if ('Ok' in result) {
+        console.log('Credential found by token:', result.Ok)
+        return result.Ok
+      } else {
+        console.error('Credential not found:', result.Err)
+        return null
+      }
+    } catch (error) {
+      console.error('Error getting credential by token:', error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
+  const searchCredentials = useCallback(async (filter: any = {}) => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      const result = await actor.searchCredentials(filter)
+      console.log('Search results:', result)
+      return result
+    } catch (error) {
+      console.error('Error searching credentials:', error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
+  const getNFT = useCallback(async (tokenId: string) => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      const result = await actor.getNFT(tokenId)
+
+      if ('Ok' in result) {
+        console.log('NFT found:', result.Ok)
+        return result.Ok
+      } else {
+        console.error('NFT not found:', result.Err)
+        return null
+      }
+    } catch (error) {
+      console.error('Error getting NFT:', error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
+  return {
+    credentials,
+    createCredential,
+    getMyCredentials,
+    getCredentialByToken,
+    searchCredentials,
+    getNFT,
+    loading
+  }
 }
 
 // Verification Hook

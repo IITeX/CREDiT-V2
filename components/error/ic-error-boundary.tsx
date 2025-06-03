@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface Props {
   children: ReactNode
@@ -44,7 +44,7 @@ export class ICErrorBoundary extends Component<Props, State> {
           <div className="max-w-md w-full">
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Internet Computer Connection Error</AlertTitle>
+              <div className="font-medium">Internet Computer Connection Error</div>
               <AlertDescription className="mt-2">
                 <div className="space-y-2">
                   <p>
