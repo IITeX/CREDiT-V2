@@ -136,7 +136,8 @@ export const useUserManagement = () => {
         console.log('🔧 Creating real storage actor with identity for user management')
         const agent = new HttpAgent({ host: HOST, identity })
 
-        if (process.env.NODE_ENV !== 'production') {
+        // Only fetch root key for local development
+        if (process.env.NEXT_PUBLIC_DFX_NETWORK === 'local') {
           agent.fetchRootKey().catch(console.error)
         }
 
@@ -242,7 +243,8 @@ export const useCredentials = () => {
         console.log('🔧 Creating real credentials actor with identity')
         const agent = new HttpAgent({ host: HOST, identity })
 
-        if (process.env.NODE_ENV !== 'production') {
+        // Only fetch root key for local development
+        if (process.env.NEXT_PUBLIC_DFX_NETWORK === 'local') {
           agent.fetchRootKey().catch(console.error)
         }
 
@@ -476,7 +478,8 @@ export const useVerification = () => {
         console.log('🔧 Creating real storage actor with identity for verification')
         const agent = new HttpAgent({ host: HOST, identity })
 
-        if (process.env.NODE_ENV !== 'production') {
+        // Only fetch root key for local development
+        if (process.env.NEXT_PUBLIC_DFX_NETWORK === 'local') {
           agent.fetchRootKey().catch(console.error)
         }
 
@@ -590,7 +593,8 @@ export const useStorage = () => {
         console.log('🔧 Creating real storage actor with identity')
         const agent = new HttpAgent({ host: HOST, identity })
 
-        if (process.env.NODE_ENV !== 'production') {
+        // Only fetch root key for local development
+        if (process.env.NEXT_PUBLIC_DFX_NETWORK === 'local') {
           agent.fetchRootKey().catch(console.error)
         }
 

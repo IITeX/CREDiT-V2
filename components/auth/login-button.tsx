@@ -111,6 +111,25 @@ export function LoginButton({
                 Please check your internet connection and try again.
               </div>
             )}
+            {error.type === 'CONNECTION_CLOSED' && (
+              <div className="mt-2 space-y-2">
+                <div className="text-sm text-muted-foreground">
+                  This is usually caused by popup blocking. Please:
+                </div>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  <li>Allow popups for this site</li>
+                  <li>Try in incognito/private mode</li>
+                  <li>Clear browser cache</li>
+                </ul>
+                <a
+                  href="/fix-ii-connection.html"
+                  target="_blank"
+                  className="inline-block mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
+                >
+                  → Open troubleshooting guide
+                </a>
+              </div>
+            )}
           </AlertDescription>
         </Alert>
       )}

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Internet Identity Connection - CREDiT</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1e40af;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .status.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .status.warning {
+            background: #fefce8;
+            color: #ca8a04;
+            border: 1px solid #fde68a;
+        }
+        .step {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #1e40af;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .test-results {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Internet Identity Connection</h1>
+        
+        <div class="status warning">
+            <strong>Issue:</strong> Internet Identity showing "Connection closed" error
+        </div>
+
+        <div class="step">
+            <h3>Step 1: Check Popup Blocking</h3>
+            <p>The most common cause is popup blocking. Please:</p>
+            <ul>
+                <li>Look for a popup blocker icon in your browser's address bar</li>
+                <li>Click it and select "Always allow popups from credit.zaide.online"</li>
+                <li>Refresh the page and try logging in again</li>
+            </ul>
+            <div id="popup-test">
+                <button onclick="testPopup()">Test Popup Blocking</button>
+                <div id="popup-result"></div>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Test Connectivity</h3>
+            <p>Let's check if all required services are accessible:</p>
+            <button onclick="runConnectivityTests()" id="connectivity-btn">Run Connectivity Tests</button>
+            <div id="connectivity-results" class="test-results" style="display: none;"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Clear Browser Data</h3>
+            <p>Sometimes cached data can cause issues:</p>
+            <ul>
+                <li>Clear your browser cache and cookies for this site</li>
+                <li>Try logging in using incognito/private browsing mode</li>
+                <li>Disable browser extensions temporarily</li>
+            </ul>
+            <button onclick="clearLocalData()">Clear Local Data</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Try Alternative Login</h3>
+            <p>If the standard login fails, try our alternative configuration:</p>
+            <button onclick="tryAlternativeLogin()" id="alt-login-btn">Try Alternative Login</button>
+            <div id="alt-login-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 5: Browser Compatibility</h3>
+            <p>If issues persist, try:</p>
+            <ul>
+                <li><strong>Chrome:</strong> Usually works best with Internet Identity</li>
+                <li><strong>Firefox:</strong> Make sure Enhanced Tracking Protection is not blocking</li>
+                <li><strong>Safari:</strong> Enable "Prevent cross-site tracking" in Privacy settings</li>
+                <li><strong>Edge:</strong> Similar to Chrome, usually works well</li>
+            </ul>
+        </div>
+
+        <div id="final-status" style="display: none;"></div>
+    </div>
+
+    <script>
+        function testPopup() {
+            const resultDiv = document.getElementById('popup-result');
+            resultDiv.innerHTML = '<div class="loading"></div> Testing popup...';
+            
+            try {
+                const popup = window.open('', 'test', 'width=300,height=200');
+                if (popup) {
+                    popup.close();
+                    resultDiv.innerHTML = '<div class="status success">✅ Popups are allowed</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="status error">❌ Popups are blocked. Please allow popups for this site.</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="status error">❌ Popup test failed: ' + error.message + '</div>';
+            }
+        }
+
+        async function runConnectivityTests() {
+            const btn = document.getElementById('connectivity-btn');
+            const resultsDiv = document.getElementById('connectivity-results');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading"></div> Testing...';
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = 'Running connectivity tests...';
+
+            const tests = [
+                { name: 'Internet Identity', url: 'https://identity.ic0.app' },
+                { name: 'IC Network', url: 'https://ic0.app/api/v2/status' },
+                { name: 'Credentials Canister', url: 'https://ic0.app/api/v2/canister/k7fau-4yaaa-aaaao-qkb2a-cai/query' },
+                { name: 'Storage Canister', url: 'https://ic0.app/api/v2/canister/kyega-raaaa-aaaao-qkb2q-cai/query' }
+            ];
+
+            let results = '<h4>Connectivity Test Results:</h4>';
+            
+            for (const test of tests) {
+                try {
+                    const response = await fetch(test.url, { method: 'HEAD', mode: 'no-cors' });
+                    results += `<div class="status success">✅ ${test.name}: Accessible</div>`;
+                } catch (error) {
+                    results += `<div class="status error">❌ ${test.name}: Failed (${error.message})</div>`;
+                }
+            }
+
+            resultsDiv.innerHTML = results;
+            btn.disabled = false;
+            btn.innerHTML = 'Run Connectivity Tests';
+        }
+
+        function clearLocalData() {
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                alert('Local data cleared! Please refresh the page and try logging in again.');
+            } catch (error) {
+                alert('Failed to clear local data: ' + error.message);
+            }
+        }
+
+        function tryAlternativeLogin() {
+            const btn = document.getElementById('alt-login-btn');
+            const resultDiv = document.getElementById('alt-login-result');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading"></div> Trying...';
+            
+            // Redirect to the main app with a flag to try alternative login
+            window.location.href = '/?alt-login=true';
+        }
+
+        // Check if we came from the main app with an error
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') === 'connection-closed') {
+            document.getElementById('final-status').innerHTML = 
+                '<div class="status error">❌ Internet Identity connection failed. Please follow the steps above to resolve the issue.</div>';
+            document.getElementById('final-status').style.display = 'block';
+        }
+
+        // Auto-run popup test on page load
+        window.onload = function() {
+            setTimeout(testPopup, 1000);
+        };
+    </script>
+</body>
+</html>
