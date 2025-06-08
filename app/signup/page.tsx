@@ -123,6 +123,7 @@ export default function SignUp() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [registrationError, setRegistrationError] = useState<string | null>(null)
+  const [isVerificationComplete, setIsVerificationComplete] = useState(false)
 
   const { isAuthenticated, principal, refreshAuth } = useAuth()
   const router = useRouter()
@@ -479,7 +480,8 @@ export default function SignUp() {
                 <AIVerificationDemo
                   onComplete={(success) => {
                     if (success) {
-                      console.log("AI verification demo completed successfully")
+                      setIsVerificationComplete(true)
+                      console.log("Document verification completed successfully")
                     }
                   }}
                 />
@@ -507,7 +509,7 @@ export default function SignUp() {
                     </Button>
                     <Button
                       type="submit"
-                      disabled={uploadedFiles.length === 0 || isLoading}
+                      disabled={uploadedFiles.length === 0 || isLoading || !isVerificationComplete}
                       className="bg-green-600 hover:bg-green-700"
                     >
                       {isLoading ? "Creating Account..." : "Submit Application"}

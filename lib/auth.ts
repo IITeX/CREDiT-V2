@@ -20,20 +20,8 @@ export interface AuthError {
 
 // Internet Identity provider URL with better environment detection
 const getIdentityProviderUrl = (): string => {
-  const isDevelopment = process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_DFX_NETWORK === "local"
-  const internetIdentityCanisterId = process.env.NEXT_PUBLIC_INTERNET_IDENTITY_CANISTER_ID
-
-  // For development, check if we should use local or production II
-  if (isDevelopment && internetIdentityCanisterId) {
-    // Check if we should use local or production II
-    const useLocalII = process.env.NEXT_PUBLIC_USE_LOCAL_II === 'true'
-    if (useLocalII) {
-      return `http://localhost:4943/?canisterId=${internetIdentityCanisterId}`
-    }
-  }
-
-  // Always use production Internet Identity for authentication
-  // This is the official Internet Identity service
+  // Always use production Internet Identity for better compatibility
+  // This ensures the app works in both development and production
   return "https://identity.ic0.app"
 }
 

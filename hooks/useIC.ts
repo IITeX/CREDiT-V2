@@ -78,6 +78,13 @@ const createMockActor = (actorType: string) => {
       console.log('Mock credential created with token ID:', credential.tokenId)
       return { Ok: [credential, nft] }
     },
+    createSoulBoundToken: async (credentialType: any, title: string) => {
+      const credential = createMockCredential(title)
+      const nft = createMockNFT(credential)
+      console.log('Mock Soul Bound Token created with token ID:', credential.tokenId)
+      return { Ok: [credential, nft] }
+    },
+    getCredentialsByIssuer: async () => [createMockCredential()],
     getCredentialsByRecipient: async () => [createMockCredential()],
     getCredentialByToken: async (tokenId: string) => {
       if (tokenId.match(/^[A-Z]{2}-\d{4}-\d{3}$/)) {
@@ -299,6 +306,57 @@ export const useCredentials = () => {
     }
   }, [actor])
 
+  const createSoulBoundToken = useCallback(async (
+    credentialType: any,
+    title: string,
+    description: string,
+    recipient: string,
+    recipientName: string,
+    issuerRole: string,
+    metadata: any = {},
+    documentHash: any[] = [],
+    expiresAt: any[] = []
+  ) => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      // Convert metadata to array of tuples format expected by canister
+      const metadataArray = Object.entries(metadata)
+
+      const result = await actor.createSoulBoundToken(
+        credentialType,
+        title,
+        description,
+        recipient,
+        recipientName,
+        issuerRole,
+        expiresAt,
+        metadataArray,
+        documentHash.length > 0 ? [documentHash[0]] : []
+      )
+
+      if ('Ok' in result) {
+        console.log('Soul Bound Token created successfully:', result.Ok)
+        // result.Ok contains [Credential, NFT] tuple
+        const [credential, nft] = result.Ok
+        console.log('SBT Credential:', credential)
+        console.log('SBT Token ID:', nft.tokenId)
+
+        // Refresh credentials list
+        await getMyCredentials()
+        return { credential, nft, tokenId: nft.tokenId }
+      } else {
+        console.error('Failed to create Soul Bound Token:', result.Err)
+        throw new Error(Object.keys(result.Err)[0])
+      }
+    } catch (error) {
+      console.error('Error creating Soul Bound Token:', error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
   const getMyCredentials = useCallback(async () => {
     if (!actor || !principal) return []
     setLoading(true)
@@ -306,6 +364,25 @@ export const useCredentials = () => {
       const result = await actor.getCredentialsByRecipient(principal.toText())
       setCredentials(result)
       return result
+    } finally {
+      setLoading(false)
+    }
+  }, [actor, principal])
+
+  const getCredentialsByIssuer = useCallback(async (issuerPrincipal?: string) => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      // Use provided principal or current user's principal
+      const issuer = issuerPrincipal || (principal ? principal.toText() : null)
+      if (!issuer) throw new Error('No issuer principal provided')
+
+      const result = await actor.getCredentialsByIssuer(issuer)
+      console.log('Credentials by issuer:', result)
+      return result
+    } catch (error) {
+      console.error('Error getting credentials by issuer:', error)
+      throw error
     } finally {
       setLoading(false)
     }
@@ -371,7 +448,9 @@ export const useCredentials = () => {
   return {
     credentials,
     createCredential,
+    createSoulBoundToken,
     getMyCredentials,
+    getCredentialsByIssuer,
     getCredentialByToken,
     searchCredentials,
     getNFT,

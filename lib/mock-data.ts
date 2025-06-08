@@ -311,8 +311,18 @@ export const mockVerifiedIssuerUser = {
 
 // Function to simulate issuer login for testing
 export function simulateIssuerLogin() {
-  // Store mock issuer data in localStorage for testing
-  localStorage.setItem('mock_issuer_user', JSON.stringify(mockVerifiedIssuerUser))
-  console.log('🎓 Mock issuer login simulated:', mockVerifiedIssuerUser)
-  return mockVerifiedIssuerUser
+  try {
+    // Check if localStorage is available (client-side only)
+    if (typeof window !== 'undefined' && window.localStorage) {
+      // Store mock issuer data in localStorage for testing
+      localStorage.setItem('mock_issuer_user', JSON.stringify(mockVerifiedIssuerUser))
+      console.log('🎓 Mock issuer login simulated:', mockVerifiedIssuerUser)
+    } else {
+      console.log('🎓 Mock issuer login simulated (server-side):', mockVerifiedIssuerUser)
+    }
+    return mockVerifiedIssuerUser
+  } catch (error) {
+    console.error('Error in simulateIssuerLogin:', error)
+    return mockVerifiedIssuerUser // Still return the user data even if localStorage fails
+  }
 }

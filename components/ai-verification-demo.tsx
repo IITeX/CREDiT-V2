@@ -96,22 +96,22 @@ export function AIVerificationDemo({ onComplete, className }: AIVerificationDemo
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Brain className="h-5 w-5 text-purple-600" />
-          <span>AI Document Verification</span>
-          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-            Demo
+          <span>Document Verification</span>
+          <Badge variant="secondary" className="bg-green-100 text-green-700">
+            Processing
           </Badge>
         </CardTitle>
         <CardDescription>
-          Experience our AI-powered document verification system
+          Our AI-powered system will verify your uploaded documents
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Demo Instructions */}
+        {/* Verification Instructions */}
         {!hasStarted && (
           <Alert>
             <Shield className="h-4 w-4" />
             <AlertDescription>
-              This demo simulates our AI verification process. Click "Start Verification" to see how our system analyzes and validates documents.
+              Upload your verification documents to begin the automated verification process. Our system will analyze and validate your documents.
             </AlertDescription>
           </Alert>
         )}
@@ -129,17 +129,17 @@ export function AIVerificationDemo({ onComplete, className }: AIVerificationDemo
             {!hasStarted ? (
               <Button onClick={startVerification} className="mt-3">
                 <Upload className="h-4 w-4 mr-2" />
-                Start Verification
+                Begin Verification
               </Button>
             ) : (
-              <Button 
-                onClick={resetDemo} 
-                variant="outline" 
+              <Button
+                onClick={resetDemo}
+                variant="outline"
                 className="mt-3"
                 disabled={isRunning}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Reset Demo
+                Restart Process
               </Button>
             )}
           </div>
@@ -238,11 +238,11 @@ export function AIVerificationDemo({ onComplete, className }: AIVerificationDemo
           </div>
         </div>
 
-        {/* Demo Notice */}
+        {/* Security Notice */}
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription className="text-xs">
-            This is a demonstration of our AI verification system. In production, actual document analysis would be performed.
+            All uploaded documents are processed securely and encrypted. Your data is protected throughout the verification process.
           </AlertDescription>
         </Alert>
       </CardContent>

@@ -1,4 +1,4 @@
-# CREDiT - Decentralized Professional Credentials Platform �
+# CREDiT - Decentralized Professional Credentials Platform 📚
 
 ## 🌟 Overview
 
@@ -77,7 +77,7 @@ Deployed IC Canisters
 
 ### **DEPLOYED PROJECT**: [https://credit.zaide.online/](https://credit.zaide.online/)
 
-## � Quick Start & Testing
+## 📚 Quick Start & Testing
 
 ### **Comprehensive Testing Interface**
 Visit [https://credit.zaide.online/test-demo](https://credit.zaide.online/test-demo) for:
@@ -181,7 +181,7 @@ npm run dev
 - ✅ **Certificate Builder**: 5 professional templates with PNG download
 - ✅ **Testing Framework**: Comprehensive test suite and demo interface
 
-### **� Innovation Impact**
+### **🎉 Innovation Impact**
 - **Fraud Prevention**: Soul Bound Tokens prevent credential fraud
 - **Issuer Verification**: SVT-backed certificates ensure authenticity
 - **Global Accessibility**: Decentralized system accessible worldwide
@@ -227,7 +227,7 @@ NEXT_PUBLIC_INTERNET_IDENTITY_CANISTER_ID=rdmx6-jaaaa-aaaah-qdrha-cai
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## � Hackathon Summary
+## 📚 Hackathon Summary
 
 **CREDiT** represents the future of professional credentials with:
 - **Soul Bound Token innovation** preventing credential fraud
