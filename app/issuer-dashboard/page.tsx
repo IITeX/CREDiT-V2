@@ -474,9 +474,9 @@ function IssuerDashboardContent() {
             <CardContent>
               <div className="space-y-4">
                 {issuerCredentials.slice(0, 10).map((credential, index) => {
-                  // Extract token ID from metadata
-                  const tokenIdMeta = credential.metadata?.find((m: any) => m[0] === 'tokenId')
-                  const tokenId = tokenIdMeta ? tokenIdMeta[1] : `Token-${index + 1}`
+                  // Use the actual token ID from the credential object
+                  const tokenId = credential.tokenId || `Token-${index + 1}`
+                  const credentialId = credential.id
 
                   return (
                     <div key={credential.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -487,6 +487,9 @@ function IssuerDashboardContent() {
                         <div>
                           <h4 className="font-medium">{tokenId}</h4>
                           <p className="text-sm text-muted-foreground">{credential.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Credential ID: {credentialId}
+                          </p>
                           <p className="text-xs text-muted-foreground">
                             Issued: {new Date(Number(credential.issuedAt) / 1000000).toLocaleDateString()}
                           </p>
@@ -500,8 +503,17 @@ function IssuerDashboardContent() {
                           variant="outline"
                           size="sm"
                           onClick={() => copyToClipboard(tokenId)}
+                          title="Copy Token ID (for NFT operations)"
                         >
-                          Copy ID
+                          Copy Token ID
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(credentialId)}
+                          title="Copy Credential ID (for credential operations)"
+                        >
+                          Copy Cred ID
                         </Button>
                       </div>
                     </div>

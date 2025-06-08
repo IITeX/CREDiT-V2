@@ -152,7 +152,7 @@ export function HeroSearchSection() {
                   <div className="text-center">
                     <h3 className="text-lg font-semibold text-green-800 mb-2">Search Verified Credentials</h3>
                     <p className="text-sm text-gray-600">
-                      Enter a credential token ID to view verified credentials
+                      Enter a <strong>Token ID</strong> (e.g., ED-2025-001, CREDiT-1) to view verified credentials
                     </p>
                   </div>
                   <div className="flex space-x-2">
@@ -160,7 +160,7 @@ export function HeroSearchSection() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500 h-5 w-5" />
                       <Input
                         type="text"
-                        placeholder="Enter credential token ID (e.g., CS-2025-001)"
+                        placeholder="Enter Token ID (e.g., ED-2025-001, CREDiT-1)"
                         value={searchToken}
                         onChange={(e) => setSearchToken(e.target.value)}
                         className="pl-10 h-12 border-green-200 focus:border-green-500 focus:ring-green-500"
@@ -195,11 +195,9 @@ export function HeroSearchSection() {
                   )}
 
                   <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
-                    <span>Try: "ED-2025-001"</span>
+                    <span>Try: "ED-2025-001" (Issuer Token)</span>
                     <span>•</span>
-                    <span>Or "CO-2025-042"</span>
-                    <span>•</span>
-                    <span>Or "CREDiT-1001"</span>
+                    <span>Or "CREDiT-1" (User Token)</span>
                   </div>
                 </div>
               </CardContent>

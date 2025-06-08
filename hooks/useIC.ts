@@ -295,7 +295,12 @@ export const useCredentials = () => {
 
         // Refresh credentials list
         await getMyCredentials()
-        return { credential, nft, tokenId: nft.tokenId }
+        return {
+          credential,
+          nft,
+          tokenId: nft.tokenId,           // For NFT operations (CREDiT-1)
+          credentialId: credential.id     // For credential operations (SK-1749407266732902981)
+        }
       } else {
         console.error('Failed to create credential:', result.Err)
         throw new Error(Object.keys(result.Err)[0])
@@ -346,7 +351,12 @@ export const useCredentials = () => {
 
         // Refresh credentials list
         await getMyCredentials()
-        return { credential, nft, tokenId: nft.tokenId }
+        return {
+          credential,
+          nft,
+          tokenId: nft.tokenId,           // For NFT operations (ED-2025-001)
+          credentialId: credential.id     // For credential operations (SK-1749407266732902981)
+        }
       } else {
         console.error('Failed to create Soul Bound Token:', result.Err)
         throw new Error(Object.keys(result.Err)[0])
@@ -411,6 +421,27 @@ export const useCredentials = () => {
     }
   }, [actor])
 
+  const getCredentialById = useCallback(async (credentialId: string) => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      const result = await actor.getCredential(credentialId)
+
+      if ('Ok' in result) {
+        console.log('Credential found by ID:', result.Ok)
+        return result.Ok
+      } else {
+        console.error('Credential not found:', result.Err)
+        return null
+      }
+    } catch (error) {
+      console.error('Error getting credential by ID:', error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
   const searchCredentials = useCallback(async (filter: any = {}) => {
     if (!actor) throw new Error('Not authenticated')
     setLoading(true)
@@ -453,9 +484,10 @@ export const useCredentials = () => {
     createSoulBoundToken,
     getMyCredentials,
     getCredentialsByIssuer,
-    getCredentialByToken,
+    getCredentialByToken,    // Use with tokenId (CREDiT-1, ED-2025-001)
+    getCredentialById,       // Use with credentialId (SK-1749407266732902981)
     searchCredentials,
-    getNFT,
+    getNFT,                  // Use with tokenId (CREDiT-1, ED-2025-001)
     loading
   }
 }
