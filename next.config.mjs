@@ -33,10 +33,7 @@ const nextConfig = {
     return config
   },
   
-  // Enable experimental features for WASM
-  experimental: {
-    esmExternals: 'loose',
-  },
+  // Experimental features removed as recommended by Next.js
 
   eslint: {
     ignoreDuringBuilds: true,

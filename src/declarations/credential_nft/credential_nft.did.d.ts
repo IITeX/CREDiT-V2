@@ -85,6 +85,15 @@ export interface _SERVICE {
   'getCredentialsByRecipient' : ActorMethod<[string], Array<Credential>>,
   'getNFT' : ActorMethod<[TokenId], Result>,
   'getNFTsByOwner' : ActorMethod<[Principal], Array<NFT>>,
+  'getName' : ActorMethod<[], string>,
+  'getStats' : ActorMethod<
+    [],
+    {
+      'totalTokens' : bigint,
+      'totalNFTs' : bigint,
+      'totalCredentials' : bigint,
+    }
+  >,
   'revokeCredential' : ActorMethod<[CredentialId], Result_1>,
   'searchCredentials' : ActorMethod<[CredentialFilter], Array<Credential>>,
   'transferNFT' : ActorMethod<[TokenId, Principal], Result>,

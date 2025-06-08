@@ -95,6 +95,20 @@ module {
         reviewedAt: ?Time.Time;
         notes: ?Text;
     };
+
+    // Credential Verification Request (for email verification)
+    public type CredentialVerificationRequest = {
+        id: Text;
+        credentialId: Text;
+        requester: UserId;
+        verifierEmail: Text;
+        credentialTitle: Text;
+        issuerName: Text;
+        status: VerificationStatus;
+        createdAt: Time.Time;
+        respondedAt: ?Time.Time;
+        response: ?Text;
+    };
     
     // Storage Types
     public type DocumentMetadata = {

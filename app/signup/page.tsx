@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+
 import { useAuth } from "@/contexts/auth-context"
 import { LoginButton } from "@/components/auth/login-button"
 import { DocumentUpload } from "@/components/auth/document-upload"
+import { AIVerificationDemo } from "@/components/ai-verification-demo"
 import { 
   User, 
   Building, 
@@ -472,6 +473,15 @@ export default function SignUp() {
                   acceptedTypes={[".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx"]}
                   maxFiles={10}
                   maxSize={25 * 1024 * 1024} // 25MB
+                />
+
+                {/* AI Verification Demo */}
+                <AIVerificationDemo
+                  onComplete={(success) => {
+                    if (success) {
+                      console.log("AI verification demo completed successfully")
+                    }
+                  }}
                 />
 
                 {/* AI Verification Notice */}

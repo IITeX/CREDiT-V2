@@ -14,6 +14,7 @@ import {
   isValidPrincipal
 } from "@/lib/auth"
 import { Principal } from "@dfinity/principal"
+import { AnonymousIdentity } from "@dfinity/agent"
 
 interface AuthContextType extends AuthState {
   login: () => Promise<boolean>
@@ -22,6 +23,10 @@ interface AuthContextType extends AuthState {
   error: AuthError | null
   clearError: () => void
   refreshAuth: () => Promise<void>
+}
+
+interface AuthProviderProps {
+  children: ReactNode
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -60,13 +65,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (devPrincipal && isValidPrincipal(devPrincipal)) {
         try {
           const principal = Principal.fromText(devPrincipal)
+          // Create an anonymous identity for dev login so it can interact with real canisters
+          const anonymousIdentity = new AnonymousIdentity()
           setAuthState({
             isAuthenticated: true,
             principal,
-            identity: null, // Dev login doesn't have real identity
+            identity: anonymousIdentity, // Use anonymous identity for dev login
             authClient: null,
           })
-          console.log("🔧 Dev login active for principal:", devPrincipal)
+          console.log("🔧 Dev login active for principal:", devPrincipal, "with anonymous identity")
           return
         } catch (err) {
           console.error("❌ Invalid dev principal, removing:", err)

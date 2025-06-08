@@ -5,15 +5,47 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Search, Shield, Sparkles, Globe, ArrowRight } from "lucide-react"
+import { Search, Shield, Sparkles, Globe, ArrowRight, Loader2 } from "lucide-react"
+import { useCredentials } from "@/hooks/useIC"
+import { getMockCertificateByTokenId } from "@/lib/mock-data"
 
 export function HeroSearchSection() {
   const [searchToken, setSearchToken] = useState("")
 
-  const handleSearch = () => {
-    if (searchToken.trim()) {
-      // Navigate to credential detail page
-      window.location.href = `/credential/${searchToken}`
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchError, setSearchError] = useState("")
+
+  const { getCredentialByToken } = useCredentials()
+
+  const handleSearch = async () => {
+    if (!searchToken.trim()) return
+
+    setIsSearching(true)
+    setSearchError("")
+
+    try {
+      // First check mock data for demo purposes
+      const mockCertificate = getMockCertificateByTokenId(searchToken.trim())
+      if (mockCertificate) {
+        // Navigate to credential detail page with mock data
+        window.location.href = `/credential/${searchToken.trim()}`
+        return
+      }
+
+      // Then check actual backend
+      const credential = await getCredentialByToken(searchToken.trim())
+
+      if (credential) {
+        // Navigate to credential detail page
+        window.location.href = `/credential/${searchToken}`
+      } else {
+        setSearchError("Credential not found. Please check the token ID and try again.")
+      }
+    } catch (error) {
+      console.error('Search error:', error)
+      setSearchError("Error searching for credential. Please try again.")
+    } finally {
+      setIsSearching(false)
     }
   }
 
@@ -118,9 +150,9 @@ export function HeroSearchSection() {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div className="text-center">
-                    <h3 className="text-lg font-semibold text-green-800 mb-2">Search Verified Profiles</h3>
+                    <h3 className="text-lg font-semibold text-green-800 mb-2">Search Verified Credentials</h3>
                     <p className="text-sm text-gray-600">
-                      Enter a profile token or username to view verified credentials
+                      Enter a credential token ID to view verified credentials
                     </p>
                   </div>
                   <div className="flex space-x-2">
@@ -128,26 +160,46 @@ export function HeroSearchSection() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500 h-5 w-5" />
                       <Input
                         type="text"
-                        placeholder="Enter profile token (e.g., john-doe-2024)"
+                        placeholder="Enter credential token ID (e.g., CS-2025-001)"
                         value={searchToken}
                         onChange={(e) => setSearchToken(e.target.value)}
                         className="pl-10 h-12 border-green-200 focus:border-green-500 focus:ring-green-500"
-                        onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                        disabled={isSearching}
                       />
                     </div>
                     <Button
                       onClick={handleSearch}
                       className="h-12 px-6 bg-green-600 hover:bg-green-700 text-white shadow-sm"
-                      disabled={!searchToken.trim()}
+                      disabled={!searchToken.trim() || isSearching}
                     >
-                      <Search className="w-4 h-4 mr-2" />
-                      Search
+                      {isSearching ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Searching...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="w-4 h-4 mr-2" />
+                          Search
+                        </>
+                      )}
                     </Button>
                   </div>
+
+                  {/* Error Message */}
+                  {searchError && (
+                    <div className="text-center text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+                      {searchError}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
-                    <span>Try: "CS-2025-001"</span>
+                    <span>Try: "ED-2025-001"</span>
                     <span>•</span>
-                    <span>Or "WE-2024-042"</span>
+                    <span>Or "CO-2025-042"</span>
+                    <span>•</span>
+                    <span>Or "CREDiT-1001"</span>
                   </div>
                 </div>
               </CardContent>
@@ -184,7 +236,7 @@ export function HeroSearchSection() {
           <motion.div variants={fadeInUp} className="mt-16">
             <p className="text-sm text-gray-600 mb-6">Trusted by leading organizations</p>
             <div className="flex items-center justify-center space-x-8 opacity-60">
-              {["University", "TechCorp", "CertifyPro", "SkillsHub"].map((name, index) => (
+              {["University", "TechCorp", "CertifyPro", "SkillsHub"].map((name) => (
                 <div key={name} className="text-gray-500 font-medium">
                   {name}
                 </div>

@@ -35,7 +35,28 @@ actor CredentialNFT {
     // Generate unique token ID
     private func generateTokenId() : TokenId {
         tokenCounter += 1;
-        "DRESUME-" # Nat.toText(tokenCounter)
+        "CREDiT-" # Nat.toText(tokenCounter)
+    };
+
+    // Generate issuer-specific token ID (for verified issuers)
+    private func generateIssuerTokenId(issuerRole: Text) : TokenId {
+        tokenCounter += 1;
+        let year = "2025"; // Could be dynamic based on current year
+        let sequence = Nat.toText(tokenCounter);
+        let paddedSequence = if (sequence.size() == 1) { "00" # sequence }
+                           else if (sequence.size() == 2) { "0" # sequence }
+                           else { sequence };
+
+        let prefix = switch(issuerRole) {
+            case ("Educational") { "ED" };
+            case ("Company") { "CO" };
+            case ("CertificationBody") { "CB" };
+            case ("NGO") { "NG" };
+            case ("Platform") { "PL" };
+            case (_) { "TK" };
+        };
+
+        prefix # "-" # year # "-" # paddedSequence
     };
 
     // Generate credential ID
@@ -116,6 +137,89 @@ actor CredentialNFT {
         };
 
         // Store credential and NFT
+        credentials.put(credentialId, credential);
+        nfts.put(tokenId, nft);
+
+        // Update owner tokens
+        let currentTokens = Option.get(ownerTokens.get(issuer), []);
+        ownerTokens.put(issuer, Array.append(currentTokens, [tokenId]));
+
+        #Ok((credential, nft))
+    };
+
+    // Create Soul Bound Token (SBT) for verified issuers
+    public shared(msg) func createSoulBoundToken(
+        credentialType: CredentialType,
+        title: Text,
+        description: Text,
+        recipient: Text,
+        recipientName: Text,
+        issuerRole: Text,
+        expiresAt: ?Time.Time,
+        metadata: [(Text, Text)],
+        documentHash: ?Text
+    ) : async Result<(Credential, NFT), ApiError> {
+        let issuer = msg.caller;
+
+        // TODO: Verify that issuer is a verified issuer
+        // This should check against the storage canister
+
+        let now = Time.now();
+        let credentialId = generateCredentialId(credentialType);
+        let tokenId = generateIssuerTokenId(issuerRole);
+
+        // Create credential with SBT properties
+        let credential : Credential = {
+            id = credentialId;
+            tokenId = tokenId;
+            credentialType = credentialType;
+            title = title;
+            description = description;
+            issuer = issuer;
+            recipient = recipient;
+            recipientName = recipientName;
+            issuedAt = now;
+            expiresAt = expiresAt;
+            metadata = Array.append(metadata, [
+                ("SBT", "true"),
+                ("Issuer_Role", issuerRole),
+                ("Non_Transferable", "true")
+            ]);
+            documentHash = documentHash;
+            isRevoked = false;
+            blockchainTxId = ?tokenId;
+        };
+
+        // Create SBT metadata
+        let nftMetadata : NFTMetadata = {
+            name = "dResume SBT: " # title;
+            description = description # " (Soul Bound Token - Non-transferable)";
+            image = "https://dresume.app/api/credential/" # credentialId # "/image";
+            attributes = Array.append([
+                ("Credential Type", debug_show(credentialType)),
+                ("Issuer", Principal.toText(issuer)),
+                ("Recipient", recipientName),
+                ("Issue Date", Nat.toText(Int.abs(now))),
+                ("Credential ID", credentialId),
+                ("Token Type", "Soul Bound Token"),
+                ("Transferable", "false"),
+                ("Issuer Role", issuerRole)
+            ], metadata);
+            credentialId = credentialId;
+            issuer = Principal.toText(issuer);
+            recipient = recipientName;
+            issuedAt = now;
+        };
+
+        // Create SBT (Soul Bound Token - non-transferable)
+        let nft : NFT = {
+            tokenId = tokenId;
+            owner = issuer; // Initially owned by issuer
+            metadata = nftMetadata;
+            createdAt = now;
+        };
+
+        // Store credential and SBT
         credentials.put(credentialId, credential);
         nfts.put(tokenId, nft);
 
@@ -240,9 +344,27 @@ actor CredentialNFT {
         }
     };
 
-    // Transfer NFT ownership
+    // Check if token is Soul Bound Token (SBT)
+    private func isSoulBoundToken(tokenId: TokenId) : Bool {
+        switch (nfts.get(tokenId)) {
+            case (?nft) {
+                // Check if metadata contains SBT marker
+                Array.find(nft.metadata.attributes, func((key, value): (Text, Text)) : Bool {
+                    key == "Token Type" and value == "Soul Bound Token"
+                }) != null
+            };
+            case null { false };
+        }
+    };
+
+    // Transfer NFT ownership (blocked for SBTs)
     public shared(msg) func transferNFT(tokenId: TokenId, newOwner: Principal) : async Result<NFT, ApiError> {
         let caller = msg.caller;
+
+        // Check if this is a Soul Bound Token
+        if (isSoulBoundToken(tokenId)) {
+            return #Err(#InvalidInput("Soul Bound Tokens cannot be transferred"));
+        };
 
         switch (nfts.get(tokenId)) {
             case null { return #Err(#NotFound) };
@@ -285,6 +407,24 @@ actor CredentialNFT {
     // Get all credentials (for admin/debugging)
     public query func getAllCredentials() : async [Credential] {
         Iter.toArray(credentials.vals())
+    };
+
+    // Get canister name
+    public query func getName() : async Text {
+        "CredentialNFT"
+    };
+
+    // Get canister stats
+    public query func getStats() : async {
+        totalCredentials: Nat;
+        totalNFTs: Nat;
+        totalTokens: Nat;
+    } {
+        {
+            totalCredentials = credentials.size();
+            totalNFTs = nfts.size();
+            totalTokens = tokenCounter;
+        }
     };
 
     // System functions

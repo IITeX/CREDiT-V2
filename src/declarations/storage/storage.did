@@ -70,6 +70,7 @@ service : {
   getDocumentsByUser: (userId: UserId) -> (vec DocumentMetadata) query;
   getFileInfo: (hash: text) -> (Result_1) query;
   getMyDocuments: () -> (vec DocumentMetadata);
+  getName: () -> (text) query;
   getRecentDocuments: (limit: nat) -> (vec DocumentMetadata) query;
   getStorageStats: () ->
    (record {

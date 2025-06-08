@@ -11,6 +11,7 @@ interface DashboardLayoutProps {
   isUserVerified: boolean
   isUserPending: boolean
   onCreateCredential?: () => void
+  isIssuer?: boolean
 }
 
 export function DashboardLayout({
@@ -18,7 +19,8 @@ export function DashboardLayout({
   user,
   isUserVerified,
   isUserPending,
-  onCreateCredential
+  onCreateCredential,
+  isIssuer = false
 }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -42,6 +44,7 @@ export function DashboardLayout({
           isUserPending={isUserPending}
           onCreateCredential={onCreateCredential}
           onClose={() => setSidebarOpen(false)}
+          isIssuer={isIssuer}
         />
       </div>
 
@@ -57,7 +60,7 @@ export function DashboardLayout({
           >
             <Menu className="h-6 w-6" />
           </Button>
-          <h1 className="text-lg font-semibold">Dashboard</h1>
+          <h1 className="text-lg font-semibold">{isIssuer ? 'Issuer Dashboard' : 'Dashboard'}</h1>
           <div className="w-10" /> {/* Spacer for centering */}
         </div>
 

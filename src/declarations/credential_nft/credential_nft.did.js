@@ -95,6 +95,18 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getNFT' : IDL.Func([TokenId], [Result], ['query']),
     'getNFTsByOwner' : IDL.Func([IDL.Principal], [IDL.Vec(NFT)], ['query']),
+    'getName' : IDL.Func([], [IDL.Text], ['query']),
+    'getStats' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'totalTokens' : IDL.Nat,
+            'totalNFTs' : IDL.Nat,
+            'totalCredentials' : IDL.Nat,
+          }),
+        ],
+        ['query'],
+      ),
     'revokeCredential' : IDL.Func([CredentialId], [Result_1], []),
     'searchCredentials' : IDL.Func(
         [CredentialFilter],
