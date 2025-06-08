@@ -5,66 +5,83 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 222 84% 5%;
+
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 84% 5%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355.7 100% 97.3%;
+    --popover-foreground: 222 84% 5%;
+
+    --primary: 194 85% 32%;
+    --primary-foreground: 210 100% 97%;
+
     --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary-foreground: 222 84% 5%;
+
     --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 142 76% 36%;
-    --accent-foreground: 355.7 100% 97.3%;
-    --destructive: 0 84.2% 60.2%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 194 85% 32%;
+    --accent-foreground: 210 100% 97%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 194 85% 32%;
+
     --radius: 0.75rem;
 
-    /* Green theme colors */
-    --green-50: 138 76% 97%;
-    --green-100: 141 84% 93%;
-    --green-200: 141 79% 85%;
-    --green-300: 142 77% 73%;
-    --green-400: 142 69% 58%;
-    --green-500: 142 76% 36%;
-    --green-600: 142 72% 29%;
-    --green-700: 142 64% 24%;
-    --green-800: 142 55% 20%;
-    --green-900: 143 61% 10%;
+    --green-50: 200 100% 96%;
+    --green-100: 199 90% 90%;
+    --green-200: 198 85% 80%;
+    --green-300: 197 80% 68%;
+    --green-400: 196 74% 55%;
+    --green-500: 195 85% 40%;
+    --green-600: 194 90% 32%;
+    --green-700: 193 92% 26%;
+    --green-800: 192 85% 22%;
+    --green-900: 190 80% 17%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 215 72% 18%;
+    /* deep slate blue, from #182b38 */
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+
+    --card: 215 72% 18%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 215 72% 18%;
     --popover-foreground: 210 40% 98%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 217.2 32.6% 17.5%;
+
+    --primary: 195 85% 40%;
+    --primary-foreground: 210 100% 97%;
+
+    --secondary: 217 33% 18%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 142 76% 36%;
-    --accent-foreground: 355.7 100% 97.3%;
-    --destructive: 0 62.8% 30.6%;
+
+    --muted: 217 33% 18%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 195 85% 40%;
+    --accent-foreground: 210 100% 97%;
+
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 76% 36%;
+
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 195 85% 40%;
   }
+
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -90,7 +107,7 @@
   }
 
   .green-gradient {
-    @apply bg-gradient-to-br from-green-400 via-green-500 to-emerald-600;
+    @apply bg-gradient-to-br from-[#182b38] via-[#2a3b50] to-[#41576a];
   }
 
   .green-gradient-subtle {
