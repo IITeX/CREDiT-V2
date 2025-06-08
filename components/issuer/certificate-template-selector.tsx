@@ -21,8 +21,8 @@ interface CertificateTemplateSelectorProps {
 const certificateTemplates = [
   {
     id: "professional",
-    name: "Professional Certificate",
-    description: "Clean and modern design for professional certifications",
+    name: "Professional Elegance",
+    description: "Sophisticated blue design with elegant typography and modern aesthetics",
     icon: Award,
     color: "bg-blue-100 text-blue-700 border-blue-200",
     preview: "/templates/professional-preview.png",
@@ -30,37 +30,37 @@ const certificateTemplates = [
   },
   {
     id: "academic",
-    name: "Academic Achievement",
-    description: "Traditional academic style for educational institutions",
+    name: "Academic Prestige",
+    description: "Traditional navy design with gold accents for prestigious institutions",
     icon: GraduationCap,
-    color: "bg-green-100 text-green-700 border-green-200",
+    color: "bg-navy-100 text-navy-700 border-navy-200",
     preview: "/templates/academic-preview.png",
     category: "Education"
   },
   {
     id: "corporate",
-    name: "Corporate Training",
-    description: "Business-focused design for corporate training programs",
+    name: "Corporate Modern",
+    description: "Sleek contemporary design with geometric elements for business",
     icon: Briefcase,
-    color: "bg-purple-100 text-purple-700 border-purple-200",
+    color: "bg-gray-100 text-gray-700 border-gray-200",
     preview: "/templates/corporate-preview.png",
     category: "Corporate"
   },
   {
     id: "achievement",
-    name: "Achievement Award",
-    description: "Celebratory design for special achievements and awards",
+    name: "Achievement Luxury",
+    description: "Warm golden design with ornate decorations for special recognition",
     icon: Trophy,
-    color: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    color: "bg-amber-100 text-amber-700 border-amber-200",
     preview: "/templates/achievement-preview.png",
     category: "Achievement"
   },
   {
     id: "excellence",
-    name: "Excellence Certificate",
-    description: "Premium design for excellence and outstanding performance",
+    name: "Excellence Premium",
+    description: "Luxurious purple design with premium styling for top performers",
     icon: Star,
-    color: "bg-red-100 text-red-700 border-red-200",
+    color: "bg-purple-100 text-purple-700 border-purple-200",
     preview: "/templates/excellence-preview.png",
     category: "Excellence"
   }

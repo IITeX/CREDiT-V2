@@ -25,6 +25,30 @@ const getIdentityProviderUrl = (): string => {
   return "https://identity.ic0.app"
 }
 
+// Get the correct derivation origin for the current environment
+const getDerivationOrigin = (): string | undefined => {
+  if (typeof window === 'undefined') return undefined
+
+  const currentOrigin = window.location.origin
+  console.log("🔗 Current origin:", currentOrigin)
+
+  // For production deployment, use the actual domain
+  if (currentOrigin.includes('credit.zaide.online')) {
+    console.log("🔗 Using production derivation origin")
+    return 'https://credit.zaide.online'
+  }
+
+  // For local development
+  if (currentOrigin.includes('localhost')) {
+    console.log("🔗 Using local derivation origin")
+    return 'http://localhost:3000'
+  }
+
+  // For other deployments, use current origin
+  console.log("🔗 Using current origin as derivation origin")
+  return currentOrigin
+}
+
 const II_URL = getIdentityProviderUrl()
 
 // Auth client singleton with enhanced configuration
@@ -59,9 +83,12 @@ export const login = async (): Promise<{ success: boolean; error?: AuthError }> 
     console.log("🔧 DFX Network:", process.env.NEXT_PUBLIC_DFX_NETWORK)
     console.log("🔧 Use Local II:", process.env.NEXT_PUBLIC_USE_LOCAL_II)
 
-    // Use the official Internet Identity approach with Promise
+    // Use the official Internet Identity approach with Promise and proper derivation origin
+    const derivationOrigin = getDerivationOrigin()
+    console.log("🔗 Derivation Origin:", derivationOrigin)
+
     await new Promise<void>((resolve, reject) => {
-      client.login({
+      const loginOptions: any = {
         identityProvider: II_URL,
         maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000), // 7 days in nanoseconds
         onSuccess: () => {
@@ -70,9 +97,39 @@ export const login = async (): Promise<{ success: boolean; error?: AuthError }> 
         },
         onError: (error) => {
           console.error("❌ Internet Identity login failed:", error)
+          console.error("❌ Error details:", {
+            message: error?.message,
+            name: error?.name,
+            stack: error?.stack
+          })
           reject(error)
         },
+      }
+
+      // Add derivation origin for production - this is crucial for deployed apps
+      // For production deployments, we MUST set the derivation origin
+      if (derivationOrigin) {
+        console.log("🔗 Setting derivation origin:", derivationOrigin)
+        loginOptions.derivationOrigin = derivationOrigin
+
+        // Also set window postMessage target origin for better compatibility
+        if (typeof window !== 'undefined') {
+          loginOptions.windowOpenerFeatures = "width=500,height=500,toolbar=0"
+        }
+      }
+
+      console.log("🔐 Login options:", {
+        identityProvider: loginOptions.identityProvider,
+        derivationOrigin: loginOptions.derivationOrigin,
+        maxTimeToLive: loginOptions.maxTimeToLive.toString()
       })
+
+      try {
+        client.login(loginOptions)
+      } catch (syncError) {
+        console.error("❌ Synchronous login error:", syncError)
+        reject(syncError)
+      }
     })
 
     return { success: true }
@@ -92,6 +149,12 @@ export const login = async (): Promise<{ success: boolean; error?: AuthError }> 
         message: 'Network error during login - please check your connection',
         details: error
       }
+    } else if (error?.toString?.()?.includes?.('Connection closed') || error?.toString?.()?.includes?.('connection')) {
+      authError = {
+        type: 'CONNECTION_CLOSED',
+        message: 'Internet Identity connection was closed. This may be due to popup blocking or CORS issues. Please ensure popups are allowed and try again.',
+        details: error
+      }
     } else {
       authError = {
         type: 'UNKNOWN_ERROR',
@@ -101,6 +164,45 @@ export const login = async (): Promise<{ success: boolean; error?: AuthError }> 
     }
 
     return { success: false, error: authError }
+  }
+}
+
+// Alternative login method with different configuration for troubleshooting
+export const loginWithAlternativeConfig = async (): Promise<{ success: boolean; error?: AuthError }> => {
+  try {
+    const client = await getAuthClient()
+
+    console.log("🔐 Trying alternative Internet Identity login configuration...")
+
+    // Try without derivation origin and with different window features
+    await new Promise<void>((resolve, reject) => {
+      client.login({
+        identityProvider: II_URL,
+        maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000), // 7 days in nanoseconds
+        windowOpenerFeatures: "width=525,height=525,left=100,top=100,toolbar=0,menubar=0,location=0,status=0,scrollbars=1,resizable=1",
+        onSuccess: () => {
+          console.log("✅ Alternative Internet Identity login successful")
+          resolve()
+        },
+        onError: (error) => {
+          console.error("❌ Alternative Internet Identity login failed:", error)
+          reject(error)
+        },
+      })
+    })
+
+    return { success: true }
+
+  } catch (error) {
+    console.error("❌ Alternative login failed:", error)
+    return {
+      success: false,
+      error: {
+        type: 'ALTERNATIVE_FAILED',
+        message: error instanceof Error ? error.message : 'Alternative login method failed',
+        details: error
+      }
+    }
   }
 }
 
@@ -210,10 +312,13 @@ export const getCurrentPrincipal = async (): Promise<Principal | null> => {
 
 // Enhanced agent creation with better configuration
 export const createAgent = async (identity?: Identity): Promise<HttpAgent> => {
-  const isDevelopment = process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_DFX_NETWORK === "local"
-  const host = isDevelopment
+  const isLocal = process.env.NEXT_PUBLIC_DFX_NETWORK === "local"
+  const host = isLocal
     ? (process.env.NEXT_PUBLIC_IC_HOST || "http://localhost:4943")
     : "https://ic0.app"
+
+  console.log("🔧 Creating agent with host:", host)
+  console.log("🔧 Network:", process.env.NEXT_PUBLIC_DFX_NETWORK)
 
   const agent = new HttpAgent({
     host,
@@ -221,8 +326,8 @@ export const createAgent = async (identity?: Identity): Promise<HttpAgent> => {
     retryTimes: 3, // Add retry logic for better reliability
   })
 
-  // Fetch root key for local development (only for local backend services)
-  if (isDevelopment && host.includes('localhost')) {
+  // Fetch root key for local development only
+  if (isLocal && host.includes('localhost')) {
     try {
       await agent.fetchRootKey()
       console.log("✅ Root key fetched for local development")
