@@ -25,6 +25,7 @@ import {
   Award,
   Users,
   X,
+  LogOut,
 } from "lucide-react"
 
 interface DashboardSidebarProps {
@@ -119,7 +120,17 @@ export function DashboardSidebar({
   isIssuer = false
 }: DashboardSidebarProps) {
   const pathname = usePathname()
-  const { principal } = useAuth()
+  const { principal, logout } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      // Redirect to home page after logout
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
 
   const getVerificationStatusInfo = () => {
     if (isUserVerified) {
@@ -223,10 +234,10 @@ export function DashboardSidebar({
       </nav>
 
       {/* Action Section */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 space-y-3">
         {isUserVerified ? (
-          <Button 
-            onClick={onCreateCredential} 
+          <Button
+            onClick={onCreateCredential}
             className="w-full"
             size="sm"
           >
@@ -248,6 +259,17 @@ export function DashboardSidebar({
             </CardContent>
           </Card>
         )}
+
+        {/* Logout Button */}
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          className="w-full border-red-200 text-red-700 hover:bg-red-50"
+          size="sm"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
       </div>
     </div>
   )

@@ -50,6 +50,39 @@ export const mockVerifiedIssuers: MockIssuer[] = [
     logoUrl: "/logos/techcorp.png"
   },
   {
+    id: "cert-authority",
+    email: "verify@certauthority.org",
+    organizationName: "Global Certification Authority",
+    role: "Certification Body",
+    verificationStatus: "Approved",
+    tokenPrefix: "CB",
+    description: "International certification body providing professional certifications and standards.",
+    website: "https://certauthority.org",
+    logoUrl: "/logos/cert-authority.png"
+  },
+  {
+    id: "green-ngo",
+    email: "contact@greenfuture.org",
+    organizationName: "Green Future NGO",
+    role: "NGO/Non-Profit",
+    verificationStatus: "Approved",
+    tokenPrefix: "NG",
+    description: "Environmental NGO focused on sustainability education and certification.",
+    website: "https://greenfuture.org",
+    logoUrl: "/logos/green-ngo.png"
+  },
+  {
+    id: "skill-platform",
+    email: "support@skillplatform.com",
+    organizationName: "SkillPlatform Marketplace",
+    role: "Platform/Marketplace",
+    verificationStatus: "Approved",
+    tokenPrefix: "PL",
+    description: "Online learning marketplace connecting learners with verified skill certifications.",
+    website: "https://skillplatform.com",
+    logoUrl: "/logos/skill-platform.png"
+  },
+  {
     id: "cert-body",
     email: "certs@certbody.org",
     organizationName: "Professional Certification Body",
@@ -263,4 +296,23 @@ export function simulateAIVerification(): Promise<AIVerificationState[]> {
       resolve(aiVerificationSteps)
     }, 3000) // 3 second simulation
   })
+}
+
+// Mock verified issuer for testing issuer dashboard
+export const mockVerifiedIssuerUser = {
+  id: 'test-issuer-ed-001',
+  email: 'test@university.edu',
+  role: { Educational: null },
+  verificationStatus: { Approved: null },
+  organizationName: 'Test University',
+  createdAt: BigInt(Date.now() * 1000000),
+  updatedAt: BigInt(Date.now() * 1000000)
+}
+
+// Function to simulate issuer login for testing
+export function simulateIssuerLogin() {
+  // Store mock issuer data in localStorage for testing
+  localStorage.setItem('mock_issuer_user', JSON.stringify(mockVerifiedIssuerUser))
+  console.log('🎓 Mock issuer login simulated:', mockVerifiedIssuerUser)
+  return mockVerifiedIssuerUser
 }

@@ -57,9 +57,9 @@ export function isDevelopment(): boolean {
 
 export function getCanisterIds() {
   return {
-    // Only deployed canisters - user_management and verification merged into storage
-    credentialNft: process.env.NEXT_PUBLIC_CREDENTIAL_NFT_CANISTER_ID || "",
-    storage: process.env.NEXT_PUBLIC_STORAGE_CANISTER_ID || "",
+    // Deployed canisters on IC Network
+    credentialNft: process.env.NEXT_PUBLIC_CREDENTIAL_NFT_CANISTER_ID || "k7fau-4yaaa-aaaao-qkb2a-cai",
+    storage: process.env.NEXT_PUBLIC_STORAGE_CANISTER_ID || "kyega-raaaa-aaaao-qkb2q-cai",
     internetIdentity: process.env.NEXT_PUBLIC_INTERNET_IDENTITY_CANISTER_ID || "rdmx6-jaaaa-aaaah-qdrha-cai"
   }
 }

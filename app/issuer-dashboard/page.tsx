@@ -27,7 +27,7 @@ import { AuthGuard } from "@/components/auth/auth-guard"
 import { ICErrorBoundary } from "@/components/error/ic-error-boundary"
 import { NetworkStatus } from "@/components/error/network-status"
 import { useAuth } from "@/contexts/auth-context"
-import { useUserManagement } from "@/hooks/useIC"
+import { useUserManagement, useCredentials } from "@/hooks/useIC"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { TokenGenerationModal } from "@/components/issuer/token-generation-modal"
 import { CertificateTemplateSelector } from "@/components/issuer/certificate-template-selector"
@@ -54,6 +54,7 @@ function IssuerDashboardContent() {
 
   // ICP hooks
   const { user, getMyProfile, loading: userLoading } = useUserManagement()
+  const { createCredential } = useCredentials()
 
   // Load user data on mount
   useEffect(() => {
@@ -131,21 +132,63 @@ function IssuerDashboardContent() {
   }
 
   const handleSaveTokens = async () => {
+    if (!principal || !user) {
+      alert('Authentication required. Please login first.')
+      return
+    }
+
     setIsSaving(true)
     try {
-      // TODO: Implement saving to credential_nft canister
-      // This will integrate with the backend canister
-      console.log('Saving tokens:', generatedTokens)
+      console.log('Saving tokens to blockchain:', generatedTokens)
       console.log('Token files:', tokenFiles)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
+      // Save each token as a credential to the blockchain
+      const savePromises = generatedTokens.map(async (tokenId) => {
+        const file = tokenFiles[tokenId]
+        if (!file) {
+          throw new Error(`No file uploaded for token ${tokenId}`)
+        }
+
+        // Create credential metadata
+        const metadata = {
+          tokenId,
+          issuerRole: Object.keys(user.role)[0],
+          issuerName: user.email,
+          fileName: file.name,
+          fileSize: file.size.toString(),
+          fileType: file.type,
+          issuedAt: new Date().toISOString(),
+          type: 'issuer-created'
+        }
+
+        // Create credential using the existing hook
+        const result = await createCredential(
+          { IssuerCertificate: null }, // Credential type for issuer-created certificates
+          `Certificate - ${tokenId}`, // Title
+          `Certificate issued by ${getRoleDisplayName()}`, // Description
+          'pending-recipient', // Recipient (to be assigned later)
+          'Pending Assignment', // Recipient name
+          metadata, // Metadata
+          [], // Document hash (empty for now)
+          [] // Expires at (optional)
+        )
+
+        console.log(`Token ${tokenId} saved successfully:`, result)
+        return result
+      })
+
+      // Wait for all tokens to be saved
+      const results = await Promise.all(savePromises)
+
+      console.log('All tokens saved successfully:', results)
+      alert(`Successfully saved ${generatedTokens.length} tokens to the blockchain!`)
+
       // Reset state after successful save
       setGeneratedTokens([])
       setTokenFiles({})
     } catch (error) {
       console.error('Error saving tokens:', error)
+      alert(`Failed to save tokens: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSaving(false)
     }
