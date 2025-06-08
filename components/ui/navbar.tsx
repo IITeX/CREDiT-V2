@@ -29,6 +29,7 @@ export function Navbar({ className = "" }: NavbarProps) {
     { href: "#features", label: "Features" },
     { href: "#how-it-works", label: "How It Works" },
     { href: "/dashboard", label: "Dashboard", authRequired: true },
+    { href: "#pricing", label: "Pricing" },
   ]
 
   return (

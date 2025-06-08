@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Shield, Users, Globe, ArrowRight, CheckCircle, Zap, Lock } from "lucide-react"
 import { Navbar } from "@/components/ui/navbar"
 import { HeroSearchSection } from "@/components/ui/hero-search-section"
+import Pricing from "@/components/pricing"
 
 export default function HomePage() {
   const fadeInUp = {
@@ -276,6 +277,33 @@ export default function HomePage() {
                   <p className="text-gray-600 leading-relaxed max-w-sm">{step.description}</p>
                 </motion.div>
               ))}
+            </motion.div>
+          </div>
+        </section>
+        
+        {/*Pricing Section*/}
+        <section id="pricing" className="py-24 bg-white">
+          <div className="container mx-auto px-4 md:px-6">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={staggerContainer}
+              className="text-center mb-16"
+            >
+              <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+                Choose your <span className="gradient-text">Plan</span>
+              </motion.h2>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={staggerContainer}
+              className=""
+            >
+              <Pricing />
             </motion.div>
           </div>
         </section>
