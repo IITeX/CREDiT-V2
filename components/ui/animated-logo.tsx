@@ -42,7 +42,7 @@ export function AnimatedLogo({ className = "", size = "md" }: AnimatedLogoProps)
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        dResume
+        CREDiT
       </motion.span>
     </motion.div>
   )

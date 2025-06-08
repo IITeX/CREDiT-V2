@@ -98,7 +98,7 @@ export function HeroSection() {
             >
               <Link href="/auth">
                 <span className="mr-2">🎯</span>
-                Start Building Your dResume
+                Start Building Your CREDiT
               </Link>
             </Button>
             <Button

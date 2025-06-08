@@ -53,31 +53,33 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Green theme colors
         green: {
-          50: "hsl(138, 76%, 97%)",
-          100: "hsl(141, 84%, 93%)",
-          200: "hsl(141, 79%, 85%)",
-          300: "hsl(142, 77%, 73%)",
-          400: "hsl(142, 69%, 58%)",
-          500: "hsl(142, 76%, 36%)",
-          600: "hsl(142, 72%, 29%)",
-          700: "hsl(142, 64%, 24%)",
-          800: "hsl(142, 55%, 20%)",
-          900: "hsl(143, 61%, 10%)",
+          50: "hsl(210, 100%, 97%)",  // sky tint
+          100: "hsl(210, 95%, 92%)",
+          200: "hsl(210, 90%, 85%)",
+          300: "hsl(211, 85%, 74%)",
+          400: "hsl(212, 78%, 60%)",  // bright accent
+          500: "hsl(213, 80%, 45%)",  // strong blue
+          600: "hsl(215, 75%, 35%)",  // near #182B38
+          700: "hsl(217, 72%, 29%)",
+          800: "hsl(219, 68%, 24%)",
+          900: "hsl(221, 70%, 16%)",  // very dark blue
         },
+
         emerald: {
-          50: "hsl(151, 81%, 96%)",
-          100: "hsl(149, 80%, 90%)",
-          200: "hsl(152, 76%, 80%)",
-          300: "hsl(156, 72%, 67%)",
-          400: "hsl(158, 64%, 52%)",
-          500: "hsl(160, 84%, 39%)",
-          600: "hsl(161, 94%, 30%)",
-          700: "hsl(163, 94%, 24%)",
-          800: "hsl(163, 88%, 20%)",
-          900: "hsl(164, 86%, 16%)",
-        },
+          50: "hsl(200, 100%, 96%)",  // pale aqua
+          100: "hsl(199, 90%, 90%)",
+          200: "hsl(198, 85%, 80%)",
+          300: "hsl(197, 80%, 68%)",
+          400: "hsl(196, 74%, 55%)",  // vibrant aqua
+          500: "hsl(195, 85%, 40%)",  // deep teal blue
+          600: "hsl(194, 90%, 32%)",
+          700: "hsl(193, 92%, 26%)",
+          800: "hsl(192, 85%, 22%)",
+          900: "hsl(190, 80%, 17%)",  // near #182B38 base
+        }
+
+
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -125,10 +127,16 @@ const config: Config = {
       },
       backgroundImage: {
         "mesh-gradient":
-          "radial-gradient(at 40% 20%, hsla(142,76%,36%,0.3) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(160,84%,39%,0.3) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(151,81%,96%,0.8) 0px, transparent 50%), radial-gradient(at 80% 50%, hsla(142,69%,58%,0.4) 0px, transparent 50%), radial-gradient(at 0% 100%, hsla(149,80%,90%,0.6) 0px, transparent 50%), radial-gradient(at 80% 100%, hsla(156,72%,67%,0.3) 0px, transparent 50%)",
+          "radial-gradient(at 40% 20%, rgba(24, 43, 56, 0.3) 0px, transparent 50%), " +
+          "radial-gradient(at 80% 0%, rgba(42, 59, 80, 0.3) 0px, transparent 50%), " +
+          "radial-gradient(at 0% 50%, rgba(255, 255, 255, 0.8) 0px, transparent 50%), " +
+          "radial-gradient(at 80% 50%, rgba(65, 87, 106, 0.4) 0px, transparent 50%), " +
+          "radial-gradient(at 0% 100%, rgba(255, 255, 255, 0.6) 0px, transparent 50%), " +
+          "radial-gradient(at 80% 100%, rgba(65, 87, 106, 0.3) 0px, transparent 50%)",
         "glass-gradient": "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)",
         "green-gradient": "linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(160, 84%, 39%) 100%)",
       },
+
       backdropBlur: {
         xs: "2px",
       },

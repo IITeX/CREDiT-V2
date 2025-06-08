@@ -184,7 +184,7 @@ export default function CredentialVerificationPage() {
               </Badge>
             </div>
             <div className="text-right">
-              <h1 className="text-2xl font-bold gradient-text">dResume</h1>
+              <h1 className="text-2xl font-bold gradient-text">CREDiT</h1>
               <p className="text-sm text-gray-600">Credential Verification</p>
             </div>
           </motion.div>

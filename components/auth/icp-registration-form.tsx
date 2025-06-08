@@ -111,7 +111,7 @@ export function ICPRegistrationForm({ onSuccess, onBack }: ICPRegistrationFormPr
         <CardHeader className="text-center">
           <CardTitle>Choose Your Role</CardTitle>
           <CardDescription>
-            Select your primary role to get started with dResume
+            Select your primary role to get started with CREDiT
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

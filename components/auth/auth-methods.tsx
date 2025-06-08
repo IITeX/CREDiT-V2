@@ -30,7 +30,7 @@ export function AuthMethods({
           {mode === "signin" ? "Welcome Back" : "Create Account"}
         </CardTitle>
         <CardDescription className="text-green-600">
-          {mode === "signin" ? "Sign in to your dResume account" : "Join the decentralized resume revolution"}
+          {mode === "signin" ? "Sign in to your CREDiT account" : "Join the decentralized resume revolution"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

@@ -205,7 +205,7 @@ export function HeroSearchSection() {
             >
               <a href="/auth">
                 <Shield className="mr-2 h-5 w-5" />
-                Start Building Your dResume
+                Start Building Your CREDiT Resume
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </a>
             </Button>

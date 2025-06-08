@@ -120,7 +120,7 @@ export function AdminSidebar() {
                 <Globe className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-green-800">dResume</h1>
+                <h1 className="text-lg font-bold text-green-800">CREDiT</h1>
                 <p className="text-xs text-green-600">Admin Panel</p>
               </div>
             </motion.div>
@@ -150,7 +150,7 @@ export function AdminSidebar() {
                 className="flex-1 min-w-0"
               >
                 <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
-                <p className="text-xs text-green-600 truncate">admin@dresume.com</p>
+                <p className="text-xs text-green-600 truncate">admin@CREDiT.com</p>
               </motion.div>
             )}
           </div>

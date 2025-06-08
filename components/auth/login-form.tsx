@@ -54,7 +54,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
           <Shield className="h-6 w-6 text-green-600" />
         </div>
         <CardTitle className="text-2xl font-bold text-green-800">Welcome Back</CardTitle>
-        <CardDescription className="text-green-600">Sign in to your dResume account</CardDescription>
+        <CardDescription className="text-green-600">Sign in to your CREDiT account</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -214,7 +214,7 @@ export default function SignUp() {
         {step === "auth" && (
           <Card className="bg-white/90 backdrop-blur-lg border border-green-200 shadow-xl">
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold text-green-800">Join dResume</CardTitle>
+              <CardTitle className="text-3xl font-bold text-green-800">Join CREDiT</CardTitle>
               <CardDescription className="text-green-600">
                 Create your verified professional profile on the blockchain
               </CardDescription>
