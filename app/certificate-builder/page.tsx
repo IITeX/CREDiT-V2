@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -112,7 +112,7 @@ const templates = {
   }
 }
 
-export default function CertificateBuilderPage() {
+function CertificateBuilderContent() {
   const searchParams = useSearchParams()
   const templateId = searchParams.get('template') || 'professional'
   const [selectedTemplate, setSelectedTemplate] = useState(templateId)
@@ -316,5 +316,20 @@ export default function CertificateBuilderPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function CertificateBuilderPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
+          <p className="text-gray-600">Loading certificate builder...</p>
+        </div>
+      </div>
+    }>
+      <CertificateBuilderContent />
+    </Suspense>
   )
 }
