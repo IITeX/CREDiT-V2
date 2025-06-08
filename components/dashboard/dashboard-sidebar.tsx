@@ -33,9 +33,10 @@ interface DashboardSidebarProps {
   isUserPending: boolean
   onCreateCredential?: () => void
   onClose?: () => void
+  isIssuer?: boolean
 }
 
-const navigation = [
+const individualNavigation = [
   {
     name: "Profile",
     href: "/dashboard",
@@ -69,12 +70,53 @@ const navigation = [
   },
 ]
 
+const issuerNavigation = [
+  {
+    name: "Dashboard",
+    href: "/issuer-dashboard",
+    icon: User,
+    description: "Issuer overview",
+  },
+  {
+    name: "Token Management",
+    href: "/issuer-dashboard/tokens",
+    icon: Award,
+    description: "Manage generated tokens",
+  },
+  {
+    name: "Certificate Builder",
+    href: "/certificate-builder",
+    icon: FileText,
+    description: "Create certificates",
+    external: true,
+  },
+  {
+    name: "Recipients",
+    href: "/issuer-dashboard/recipients",
+    icon: Users,
+    description: "Credential recipients",
+  },
+  {
+    name: "Analytics",
+    href: "/issuer-dashboard/analytics",
+    icon: BarChart3,
+    description: "Issuance analytics",
+  },
+  {
+    name: "Settings",
+    href: "/issuer-dashboard/settings",
+    icon: Settings,
+    description: "Issuer settings",
+  },
+]
+
 export function DashboardSidebar({
   user,
   isUserVerified,
   isUserPending,
   onCreateCredential,
-  onClose
+  onClose,
+  isIssuer = false
 }: DashboardSidebarProps) {
   const pathname = usePathname()
   const { principal } = useAuth()
@@ -106,6 +148,7 @@ export function DashboardSidebar({
 
   const statusInfo = getVerificationStatusInfo()
   const StatusIcon = statusInfo.icon
+  const navigation = isIssuer ? issuerNavigation : individualNavigation
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -188,7 +231,7 @@ export function DashboardSidebar({
             size="sm"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Create Credential
+            {isIssuer ? 'Generate Tokens' : 'Create Credential'}
           </Button>
         ) : (
           <Card className="border-blue-200 bg-blue-50">
@@ -196,9 +239,9 @@ export function DashboardSidebar({
               <div className="text-center">
                 <Clock className="h-8 w-8 text-blue-400 mx-auto mb-2" />
                 <p className="text-xs text-blue-700">
-                  {isUserPending 
-                    ? "Account under review. You'll be able to create credentials once verified."
-                    : "Complete verification to create credentials."
+                  {isUserPending
+                    ? `Account under review. You'll be able to ${isIssuer ? 'generate tokens' : 'create credentials'} once verified.`
+                    : `Complete verification to ${isIssuer ? 'generate tokens' : 'create credentials'}.`
                   }
                 </p>
               </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -120,6 +121,7 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { principal } = useAuth()
+  const router = useRouter()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
   // ICP hooks
@@ -133,6 +135,20 @@ function DashboardContent() {
       getMyCredentials().catch(console.error)
     }
   }, [principal, getMyProfile, getMyCredentials])
+
+  // Redirect based on user role
+  useEffect(() => {
+    if (user && user.role) {
+      // Check if user is an issuer (any role except Individual)
+      const userRole = Object.keys(user.role)[0]
+      const isIssuer = userRole !== "Individual"
+
+      if (isIssuer) {
+        router.push('/issuer-dashboard')
+        return
+      }
+    }
+  }, [user, router])
 
   // Check if user is verified (check for 'Approved' status from backend)
   const isUserVerified = user?.verificationStatus &&

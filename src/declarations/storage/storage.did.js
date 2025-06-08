@@ -65,6 +65,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getFileInfo' : IDL.Func([IDL.Text], [Result_1], ['query']),
     'getMyDocuments' : IDL.Func([], [IDL.Vec(DocumentMetadata)], []),
+    'getName' : IDL.Func([], [IDL.Text], ['query']),
     'getRecentDocuments' : IDL.Func(
         [IDL.Nat],
         [IDL.Vec(DocumentMetadata)],

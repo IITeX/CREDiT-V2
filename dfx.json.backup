@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "canisters": {
+    "user_management": {
+      "type": "motoko",
+      "main": "src/backend/user_management/main.mo",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
+    },
+    "credential_nft": {
+      "type": "motoko",
+      "main": "src/backend/credential_nft/main.mo",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
+    },
+    "verification": {
+      "type": "motoko",
+      "main": "src/backend/verification/main.mo",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
+    },
+    "storage": {
+      "type": "motoko",
+      "main": "src/backend/storage/main.mo",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943",
+      "type": "ephemeral"
+    }
+  },
+  "output_env_file": ".env",
+  "generate": {
+    "binding": ["typescript"],
+    "output": "src/declarations"
+  }
+}

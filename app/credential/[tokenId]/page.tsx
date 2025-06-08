@@ -7,13 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { 
-  ArrowLeft, 
-  Shield, 
-  Calendar, 
-  User, 
-  Building, 
-  Award, 
+import {
+  ArrowLeft,
+  Shield,
+  Calendar,
+  Building,
+  Award,
   ExternalLink,
   CheckCircle,
   Clock,
@@ -21,14 +20,17 @@ import {
   Loader2
 } from "lucide-react"
 import { useCredentials } from "@/hooks/useIC"
+import { getMockCertificateByTokenId } from "@/lib/mock-data"
 
 export default function CredentialDetailPage() {
   const params = useParams()
   const tokenId = params.tokenId as string
   const [credential, setCredential] = useState<any>(null)
   const [nft, setNFT] = useState<any>(null)
+  const [issuerInfo, setIssuerInfo] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [isIssuerCreated, setIsIssuerCreated] = useState(false)
 
   const { getCredentialByToken, getNFT } = useCredentials()
 
@@ -40,19 +42,67 @@ export default function CredentialDetailPage() {
       setError("")
 
       try {
-        // Fetch credential by token ID
-        const credentialData = await getCredentialByToken(tokenId)
-        
-        if (credentialData) {
-          setCredential(credentialData)
-          
-          // Also fetch NFT data
-          const nftData = await getNFT(tokenId)
-          if (nftData) {
-            setNFT(nftData)
+        // First check for mock data
+        const mockData = getMockCertificateByTokenId(tokenId)
+        if (mockData) {
+          console.log("Using mock data for token:", tokenId)
+
+          // Convert mock data to credential format
+          const mockCredential = {
+            id: mockData.tokenId,
+            tokenId: mockData.tokenId,
+            title: mockData.title,
+            description: mockData.description,
+            issuer: { toText: () => mockData.issuer.email },
+            recipient: mockData.recipient,
+            recipientName: mockData.recipientName,
+            issuedAt: BigInt(new Date(mockData.issuedAt).getTime() * 1000000), // Convert to nanoseconds
+            isRevoked: false,
+            metadata: Object.entries(mockData.metadata)
+          }
+          setCredential(mockCredential)
+
+          // Set issuer info for mock data
+          setIsIssuerCreated(mockData.type === 'issuer-created')
+          if (mockData.type === 'issuer-created') {
+            setIssuerInfo({
+              name: mockData.issuer.organizationName,
+              type: mockData.issuer.role,
+              email: mockData.issuer.email,
+              verified: true,
+              description: mockData.issuer.description
+            })
           }
         } else {
-          setError("Credential not found. Please check the token ID and try again.")
+          // Fallback to actual backend
+          const credentialData = await getCredentialByToken(tokenId)
+
+          if (credentialData) {
+            setCredential(credentialData)
+
+            // Determine if this is an issuer-created credential
+            // Check if token follows issuer format (e.g., ED-2025-001, CO-2025-001)
+            const issuerTokenPattern = /^[A-Z]{2}-\d{4}-\d{3}$/
+            const isIssuerToken = issuerTokenPattern.test(tokenId)
+            setIsIssuerCreated(isIssuerToken)
+
+            // If issuer-created, fetch issuer information
+            if (isIssuerToken) {
+              // TODO: Fetch issuer information from backend
+              // For now, use mock data based on token prefix
+              const prefix = tokenId.substring(0, 2)
+              const mockIssuerInfo = getMockIssuerInfo(prefix)
+              setIssuerInfo(mockIssuerInfo)
+            }
+
+            // Also fetch NFT data
+            const nftData = await getNFT(tokenId)
+            if (nftData) {
+              setNFT(nftData)
+            }
+          } else {
+            setError("Credential not found. Please check the token ID and try again.")
+          }
         }
       } catch (err) {
         console.error('Error fetching credential:', err)
@@ -72,6 +122,53 @@ export default function CredentialDetailPage() {
       month: 'long',
       day: 'numeric'
     })
+  }
+
+  const getMockIssuerInfo = (prefix: string) => {
+    const issuerMap: { [key: string]: any } = {
+      'ED': {
+        name: 'State University',
+        type: 'Educational Institution',
+        email: 'education@university.edu',
+        verified: true,
+        description: 'Leading educational institution providing quality education and certification programs.'
+      },
+      'CO': {
+        name: 'TechCorp Inc.',
+        type: 'Company/Organization',
+        email: 'hr@techcorp.com',
+        verified: true,
+        description: 'Technology company specializing in software development and digital solutions.'
+      },
+      'CB': {
+        name: 'Professional Certification Body',
+        type: 'Certification Body',
+        email: 'certs@certbody.org',
+        verified: true,
+        description: 'Authorized certification body for professional standards and qualifications.'
+      },
+      'NG': {
+        name: 'Community NGO',
+        type: 'NGO/Non-Profit',
+        email: 'admin@ngo.org',
+        verified: true,
+        description: 'Non-profit organization focused on community development and social impact.'
+      },
+      'PL': {
+        name: 'Skills Marketplace',
+        type: 'Platform/Marketplace',
+        email: 'platform@marketplace.com',
+        verified: true,
+        description: 'Digital platform connecting professionals with skill verification and opportunities.'
+      }
+    }
+    return issuerMap[prefix] || {
+      name: 'Unknown Issuer',
+      type: 'Organization',
+      email: 'contact@issuer.com',
+      verified: false,
+      description: 'Verified issuer organization.'
+    }
   }
 
   const getCredentialTypeDisplay = (credentialType: any) => {
@@ -143,8 +240,15 @@ export default function CredentialDetailPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
+          {/* Credential Type Indicator */}
+          <div className="text-center">
+            <Badge variant="secondary" className="mb-4">
+              {isIssuerCreated ? "Issuer-Generated Certificate" : "Individual Credential"}
+            </Badge>
+          </div>
+
           {/* Credential Header */}
-          <Card className="border-l-4 border-l-green-500">
+          <Card className={`border-l-4 ${isIssuerCreated ? 'border-l-blue-500' : 'border-l-green-500'}`}>
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
@@ -157,13 +261,20 @@ export default function CredentialDetailPage() {
                     {credential?.description}
                   </CardDescription>
                 </div>
-                <Badge 
-                  variant="outline" 
-                  className={getStatusColor(credential?.isRevoked)}
-                >
-                  {credential?.isRevoked ? "Revoked" : "Verified"}
-                  {!credential?.isRevoked && <CheckCircle className="h-3 w-3 ml-1" />}
-                </Badge>
+                <div className="flex flex-col items-end space-y-2">
+                  <Badge
+                    variant="outline"
+                    className={getStatusColor(credential?.isRevoked)}
+                  >
+                    {credential?.isRevoked ? "Revoked" : "Verified"}
+                    {!credential?.isRevoked && <CheckCircle className="h-3 w-3 ml-1" />}
+                  </Badge>
+                  {isIssuerCreated && issuerInfo?.verified && (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      SVT-Backed
+                    </Badge>
+                  )}
+                </div>
               </div>
             </CardHeader>
           </Card>
@@ -218,24 +329,64 @@ export default function CredentialDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Building className="h-5 w-5 mr-2 text-green-600" />
-                  Issuer Information
+                  {isIssuerCreated ? 'Issuer Organization' : 'Issuer Information'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Issuer ID</label>
-                    <p className="text-sm font-mono break-all">{credential?.issuer?.toText()}</p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Verification Status</label>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <p className="text-sm text-green-700">Cryptographically Verified</p>
+                {isIssuerCreated && issuerInfo ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Organization</label>
+                      <p className="text-sm font-semibold">{issuerInfo.name}</p>
+                    </div>
+                    <Separator />
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Type</label>
+                      <p className="text-sm">{issuerInfo.type}</p>
+                    </div>
+                    <Separator />
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Contact</label>
+                      <p className="text-sm">{issuerInfo.email}</p>
+                    </div>
+                    <Separator />
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Description</label>
+                      <p className="text-sm text-gray-600">{issuerInfo.description}</p>
+                    </div>
+                    <Separator />
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Verification Status</label>
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <p className="text-sm text-green-700">Verified Issuer</p>
+                      </div>
+                    </div>
+                    <Separator />
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Issued</label>
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        <p className="text-sm">{formatDate(credential?.issuedAt)}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Issuer ID</label>
+                      <p className="text-sm font-mono break-all">{credential?.issuer?.toText()}</p>
+                    </div>
+                    <Separator />
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Verification Status</label>
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <p className="text-sm text-green-700">Cryptographically Verified</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

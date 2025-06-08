@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Shield, Sparkles, Globe, ArrowRight, Loader2 } from "lucide-react"
 import { useCredentials } from "@/hooks/useIC"
+import { getMockCertificateByTokenId } from "@/lib/mock-data"
 
 export function HeroSearchSection() {
   const [searchToken, setSearchToken] = useState("")
-  const [searchResult, setSearchResult] = useState<any>(null)
+
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState("")
 
@@ -21,13 +22,20 @@ export function HeroSearchSection() {
 
     setIsSearching(true)
     setSearchError("")
-    setSearchResult(null)
 
     try {
+      // First check mock data for demo purposes
+      const mockCertificate = getMockCertificateByTokenId(searchToken.trim())
+      if (mockCertificate) {
+        // Navigate to credential detail page with mock data
+        window.location.href = `/credential/${searchToken.trim()}`
+        return
+      }
+
+      // Then check actual backend
       const credential = await getCredentialByToken(searchToken.trim())
 
       if (credential) {
-        setSearchResult(credential)
         // Navigate to credential detail page
         window.location.href = `/credential/${searchToken}`
       } else {
@@ -156,7 +164,7 @@ export function HeroSearchSection() {
                         value={searchToken}
                         onChange={(e) => setSearchToken(e.target.value)}
                         className="pl-10 h-12 border-green-200 focus:border-green-500 focus:ring-green-500"
-                        onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                         disabled={isSearching}
                       />
                     </div>
@@ -187,9 +195,11 @@ export function HeroSearchSection() {
                   )}
 
                   <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
-                    <span>Try: "CS-2025-001"</span>
+                    <span>Try: "ED-2025-001"</span>
                     <span>•</span>
-                    <span>Or "WE-2024-042"</span>
+                    <span>Or "CO-2025-042"</span>
+                    <span>•</span>
+                    <span>Or "CREDiT-1001"</span>
                   </div>
                 </div>
               </CardContent>
@@ -226,7 +236,7 @@ export function HeroSearchSection() {
           <motion.div variants={fadeInUp} className="mt-16">
             <p className="text-sm text-gray-600 mb-6">Trusted by leading organizations</p>
             <div className="flex items-center justify-center space-x-8 opacity-60">
-              {["University", "TechCorp", "CertifyPro", "SkillsHub"].map((name, index) => (
+              {["University", "TechCorp", "CertifyPro", "SkillsHub"].map((name) => (
                 <div key={name} className="text-gray-500 font-medium">
                   {name}
                 </div>

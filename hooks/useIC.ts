@@ -121,15 +121,16 @@ export const useUserManagement = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (isAuthenticated) {
-      // Check if we're in simulation mode or dev login (no identity)
-      if (isSimulationMode() || !identity) {
-        console.log('🔧 Using mock actor for user management (simulation mode or dev login)')
+    if (isAuthenticated && identity) {
+      // Only use simulation mode if explicitly enabled
+      if (isSimulationMode()) {
+        console.log('🔧 Using mock actor for user management (simulation mode)')
         setActor(createMockActor('UserManagement'))
         return
       }
 
       if (userManagementIdl) {
+        console.log('🔧 Creating real user management actor with identity')
         const agent = new HttpAgent({ host: HOST, identity })
 
         if (process.env.NODE_ENV !== 'production') {
@@ -226,15 +227,16 @@ export const useCredentials = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (isAuthenticated) {
-      // Check if we're in simulation mode or dev login (no identity)
-      if (isSimulationMode() || !identity) {
-        console.log('🔧 Using mock actor for credentials (simulation mode or dev login)')
+    if (isAuthenticated && identity) {
+      // Only use simulation mode if explicitly enabled
+      if (isSimulationMode()) {
+        console.log('🔧 Using mock actor for credentials (simulation mode)')
         setActor(createMockActor('CredentialNFT'))
         return
       }
 
       if (credentialNftIdl) {
+        console.log('🔧 Creating real credentials actor with identity')
         const agent = new HttpAgent({ host: HOST, identity })
 
         if (process.env.NODE_ENV !== 'production') {
@@ -390,13 +392,15 @@ export const useVerification = () => {
   useEffect(() => {
     if (isAuthenticated && identity) {
       if (isSimulationMode()) {
+        console.log('🔧 Using mock actor for verification (simulation mode)')
         setActor(createMockActor('Verification'))
         return
       }
-      
+
       if (verificationIdl) {
+        console.log('🔧 Creating real verification actor with identity')
         const agent = new HttpAgent({ host: HOST, identity })
-        
+
         if (process.env.NODE_ENV !== 'production') {
           agent.fetchRootKey().catch(console.error)
         }
@@ -407,6 +411,8 @@ export const useVerification = () => {
         })
         setActor(actor)
       }
+    } else {
+      setActor(null)
     }
   }, [isAuthenticated, identity])
 
@@ -445,13 +451,15 @@ export const useStorage = () => {
   useEffect(() => {
     if (isAuthenticated && identity) {
       if (isSimulationMode()) {
+        console.log('🔧 Using mock actor for storage (simulation mode)')
         setActor(createMockActor('Storage'))
         return
       }
-      
+
       if (storageIdl) {
+        console.log('🔧 Creating real storage actor with identity')
         const agent = new HttpAgent({ host: HOST, identity })
-        
+
         if (process.env.NODE_ENV !== 'production') {
           agent.fetchRootKey().catch(console.error)
         }
@@ -462,6 +470,8 @@ export const useStorage = () => {
         })
         setActor(actor)
       }
+    } else {
+      setActor(null)
     }
   }, [isAuthenticated, identity])
 

@@ -59,6 +59,7 @@ export interface _SERVICE {
   'getDocumentsByUser' : ActorMethod<[UserId], Array<DocumentMetadata>>,
   'getFileInfo' : ActorMethod<[string], Result_1>,
   'getMyDocuments' : ActorMethod<[], Array<DocumentMetadata>>,
+  'getName' : ActorMethod<[], string>,
   'getRecentDocuments' : ActorMethod<[bigint], Array<DocumentMetadata>>,
   'getStorageStats' : ActorMethod<
     [],

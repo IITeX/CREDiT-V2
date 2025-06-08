@@ -1,21 +1,23 @@
 {
   "version": 1,
   "canisters": {
-    "user_management": {
-      "type": "motoko",
-      "main": "src/backend/user_management/main.mo"
-    },
     "credential_nft": {
       "type": "motoko",
-      "main": "src/backend/credential_nft/main.mo"
-    },
-    "verification": {
-      "type": "motoko",
-      "main": "src/backend/verification/main.mo"
+      "main": "src/backend/credential_nft/main.mo",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
     },
     "storage": {
       "type": "motoko",
-      "main": "src/backend/storage/main.mo"
+      "main": "src/backend/storage/main.mo",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
     }
   },
   "networks": {

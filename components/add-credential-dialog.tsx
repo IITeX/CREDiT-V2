@@ -19,8 +19,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Award, Briefcase, GraduationCap, Heart, Code, Trophy, Upload, Plus, Users, Loader2, CheckCircle, Copy } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCredentials } from "@/hooks/useIC"
 import { useAuth } from "@/contexts/auth-context"
+import { useIssuers } from "@/hooks/useIssuers"
 
 interface AddCredentialDialogProps {
   open: boolean
@@ -29,6 +31,8 @@ interface AddCredentialDialogProps {
 
 export function AddCredentialDialog({ open, onOpenChange }: AddCredentialDialogProps) {
   const [selectedType, setSelectedType] = useState("")
+  const [selectedIssuer, setSelectedIssuer] = useState<string>("")
+  const [useCustomIssuer, setUseCustomIssuer] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
     issuer: "",
@@ -39,9 +43,10 @@ export function AddCredentialDialog({ open, onOpenChange }: AddCredentialDialogP
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successData, setSuccessData] = useState<{ tokenId: string; title: string } | null>(null)
-  
+
   const { createCredential } = useCredentials()
   const { principal } = useAuth()
+  const { issuers, loading: issuersLoading } = useIssuers()
 
   const credentialTypes = [
     {
@@ -167,6 +172,8 @@ export function AddCredentialDialog({ open, onOpenChange }: AddCredentialDialogP
     // Reset form and success state
     setTimeout(() => {
       setSelectedType("")
+      setSelectedIssuer("")
+      setUseCustomIssuer(false)
       setSuccessData(null)
       setFormData({
         title: "",
@@ -177,6 +184,25 @@ export function AddCredentialDialog({ open, onOpenChange }: AddCredentialDialogP
         attachments: [],
       })
     }, 300)
+  }
+
+  const handleIssuerChange = (value: string) => {
+    if (value === "custom") {
+      setUseCustomIssuer(true)
+      setSelectedIssuer("")
+      setFormData(prev => ({ ...prev, issuer: "", verifierEmail: "" }))
+    } else {
+      setUseCustomIssuer(false)
+      setSelectedIssuer(value)
+      const selectedIssuerData = issuers.find(issuer => issuer.id === value)
+      if (selectedIssuerData) {
+        setFormData(prev => ({
+          ...prev,
+          issuer: selectedIssuerData.organizationName || selectedIssuerData.email,
+          verifierEmail: selectedIssuerData.email
+        }))
+      }
+    }
   }
 
   const copyTokenId = () => {
@@ -329,13 +355,68 @@ export function AddCredentialDialog({ open, onOpenChange }: AddCredentialDialogP
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="issuer">Issuer/Organization *</Label>
-                  <Input
-                    id="issuer"
-                    placeholder="e.g., Amazon Web Services"
-                    value={formData.issuer}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, issuer: e.target.value }))}
-                    required
-                  />
+                  {!useCustomIssuer ? (
+                    <Select value={selectedIssuer} onValueChange={handleIssuerChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an issuer or enter manually" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {issuersLoading ? (
+                          <SelectItem value="loading" disabled>
+                            <div className="flex items-center">
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Loading issuers...
+                            </div>
+                          </SelectItem>
+                        ) : (
+                          <>
+                            {issuers.map((issuer) => (
+                              <SelectItem key={issuer.id} value={issuer.id}>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">
+                                    {issuer.organizationName || issuer.email}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {issuer.role} • {issuer.email}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                            <SelectItem value="custom">
+                              <div className="flex items-center">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Enter manually
+                              </div>
+                            </SelectItem>
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        id="issuer"
+                        placeholder="e.g., Amazon Web Services"
+                        value={formData.issuer}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, issuer: e.target.value }))}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleIssuerChange("")}
+                        className="text-xs"
+                      >
+                        ← Back to issuer list
+                      </Button>
+                    </div>
+                  )}
+                  {!useCustomIssuer && selectedIssuer && (
+                    <p className="text-xs text-green-600">
+                      ✓ This issuer is verified in our system
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -362,15 +443,21 @@ export function AddCredentialDialog({ open, onOpenChange }: AddCredentialDialogP
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="verifierEmail">Verifier Email (Optional)</Label>
+                  <Label htmlFor="verifierEmail">Verifier Email {!selectedIssuer && useCustomIssuer ? "(Optional)" : ""}</Label>
                   <Input
                     id="verifierEmail"
                     type="email"
                     placeholder="verifier@organization.com"
                     value={formData.verifierEmail}
                     onChange={(e) => setFormData((prev) => ({ ...prev, verifierEmail: e.target.value }))}
+                    disabled={Boolean(selectedIssuer && !useCustomIssuer)}
                   />
-                  <p className="text-xs text-muted-foreground">We'll send a verification request to this email</p>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedIssuer && !useCustomIssuer
+                      ? "Verification will be sent to the selected issuer automatically"
+                      : "We'll send a verification request to this email"
+                    }
+                  </p>
                 </div>
               </div>
 
