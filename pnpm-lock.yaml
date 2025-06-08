@@ -9,19 +9,19 @@ importers:
   .:
     dependencies:
       '@dfinity/agent':
-        specifier: latest
+        specifier: ^2.4.1
         version: 2.4.1(@dfinity/candid@2.4.1(@dfinity/principal@2.4.1))(@dfinity/principal@2.4.1)
       '@dfinity/auth-client':
-        specifier: latest
+        specifier: ^2.4.1
         version: 2.4.1(@dfinity/agent@2.4.1(@dfinity/candid@2.4.1(@dfinity/principal@2.4.1))(@dfinity/principal@2.4.1))(@dfinity/identity@2.4.1(@dfinity/agent@2.4.1(@dfinity/candid@2.4.1(@dfinity/principal@2.4.1))(@dfinity/principal@2.4.1))(@dfinity/principal@2.4.1))(@dfinity/principal@2.4.1)
       '@dfinity/candid':
-        specifier: latest
+        specifier: ^2.4.1
         version: 2.4.1(@dfinity/principal@2.4.1)
       '@dfinity/identity':
-        specifier: latest
+        specifier: ^2.4.1
         version: 2.4.1(@dfinity/agent@2.4.1(@dfinity/candid@2.4.1(@dfinity/principal@2.4.1))(@dfinity/principal@2.4.1))(@dfinity/principal@2.4.1)
       '@dfinity/principal':
-        specifier: latest
+        specifier: ^2.4.1
         version: 2.4.1
       '@emotion/is-prop-valid':
         specifier: latest

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AnimatedLogo } from "./animated-logo"
-import { useAuth } from "@/contexts/auth-context"
+import { useInternetIdentity } from "@/hooks/useInternetIdentity"
 
 interface NavbarProps {
   className?: string
@@ -15,7 +15,7 @@ interface NavbarProps {
 export function Navbar({ className = "" }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, loading } = useInternetIdentity()
 
   useEffect(() => {
     const handleScroll = () => {

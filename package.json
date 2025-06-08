@@ -16,11 +16,11 @@
     "docker:setup": "npm run docker:start && npm run docker:deploy"
   },
   "dependencies": {
-    "@dfinity/agent": "latest",
-    "@dfinity/auth-client": "latest",
-    "@dfinity/candid": "latest",
-    "@dfinity/identity": "latest",
-    "@dfinity/principal": "latest",
+    "@dfinity/agent": "^2.4.1",
+    "@dfinity/auth-client": "^2.4.1",
+    "@dfinity/candid": "^2.4.1",
+    "@dfinity/identity": "^2.4.1",
+    "@dfinity/principal": "^2.4.1",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "1.2.2",

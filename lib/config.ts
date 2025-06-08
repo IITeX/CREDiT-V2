@@ -35,11 +35,18 @@ export type Environment = keyof typeof CONFIG
 export function getConfig(): typeof CONFIG[Environment] {
   const env = (process.env.NODE_ENV || 'development') as Environment
   const simulationMode = process.env.NEXT_PUBLIC_SIMULATION_MODE === 'true'
-  
+  const dfxNetwork = process.env.NEXT_PUBLIC_DFX_NETWORK
+
+  // Force production config when using deployed canisters
+  if (dfxNetwork === 'ic' || dfxNetwork === 'mainnet') {
+    console.log('🔧 Using production config for deployed canisters')
+    return CONFIG.production
+  }
+
   if (simulationMode && env === 'development') {
     return CONFIG.simulation
   }
-  
+
   return CONFIG[env] || CONFIG.development
 }
 

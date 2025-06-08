@@ -405,14 +405,16 @@ export const getDevPrincipal = (): string | null => {
     return null
   }
 
-  // Check if dev login is enabled (be more flexible with the check)
+  // Check if dev login is enabled OR if demo login is enabled (always available in production)
   const enableDevLogin = process.env.NEXT_PUBLIC_ENABLE_DEV_LOGIN
-  if (enableDevLogin !== 'true' && enableDevLogin !== true) {
-    console.log("🔧 Dev login not enabled:", enableDevLogin)
+  const enableDemoLogin = process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN
+
+  if (enableDevLogin !== 'true' && enableDevLogin !== true && enableDemoLogin !== 'true') {
+    console.log("🔧 Neither dev login nor demo login is enabled")
     return null
   }
 
   const devPrincipal = localStorage.getItem('dev_principal')
-  console.log("🔧 Getting dev principal:", devPrincipal)
+  console.log("🔧 Getting dev/demo principal:", devPrincipal)
   return devPrincipal
 }

@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCredentials } from "@/hooks/useIC"
 import { useAuth } from "@/contexts/auth-context"
 import { useIssuers } from "@/hooks/useIssuers"
+import { useToast } from "@/hooks/use-toast"
 
 interface AddCredentialDialogProps {
   open: boolean
@@ -47,6 +48,7 @@ export function AddCredentialDialog({ open, onOpenChange }: AddCredentialDialogP
   const { createCredential } = useCredentials()
   const { principal } = useAuth()
   const { issuers, loading: issuersLoading } = useIssuers()
+  const { toast } = useToast()
 
   const credentialTypes = [
     {
@@ -156,9 +158,17 @@ export function AddCredentialDialog({ open, onOpenChange }: AddCredentialDialogP
 
       // Check if it's an authentication error
       if (error instanceof Error && error.message.includes("Not authenticated")) {
-        alert("Authentication Required!\n\nPlease authenticate with Internet Identity first.\n\nGo to 'Setup Admin' to login, then try creating credentials again.")
+        toast({
+          title: "Authentication Required",
+          description: "Please authenticate with Internet Identity first. Go to 'Setup Admin' to login, then try creating credentials again.",
+          variant: "destructive",
+        })
       } else {
-        alert("Failed to create credential. Please try again.\n\nError: " + (error instanceof Error ? error.message : String(error)))
+        toast({
+          title: "Failed to Create Credential",
+          description: `Error: ${error instanceof Error ? error.message : String(error)}`,
+          variant: "destructive",
+        })
       }
     } finally {
       setIsSubmitting(false)

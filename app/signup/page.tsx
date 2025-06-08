@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
-import { useAuth } from "@/contexts/auth-context"
-import { LoginButton } from "@/components/auth/login-button"
+import { useInternetIdentity } from "@/hooks/useInternetIdentity"
+import { InternetIdentityButton } from "@/components/auth/internet-identity-button"
 import { DocumentUpload } from "@/components/auth/document-upload"
 import { AIVerificationDemo } from "@/components/ai-verification-demo"
 import { 
@@ -125,7 +125,7 @@ export default function SignUp() {
   const [registrationError, setRegistrationError] = useState<string | null>(null)
   const [isVerificationComplete, setIsVerificationComplete] = useState(false)
 
-  const { isAuthenticated, principal, refreshAuth } = useAuth()
+  const { isAuthenticated, principal } = useInternetIdentity()
   const router = useRouter()
 
   // Auto-advance to role selection once authenticated
@@ -227,35 +227,20 @@ export default function SignUp() {
                   Sign in with Internet Identity to get started
                 </p>
                 <div className="space-y-3">
-                  <LoginButton
+                  <InternetIdentityButton
                     size="lg"
-                    className="bg-green-600 hover:bg-green-700 w-full"
+                    className="bg-green-600 hover:bg-green-700"
+                    onSuccess={() => {
+                      console.log("✅ Internet Identity login successful for signup")
+                      // The useEffect will handle advancing to the next step
+                    }}
+                    onError={(error) => {
+                      console.error("❌ Internet Identity login failed:", error)
+                      setRegistrationError(`Authentication failed: ${error}`)
+                    }}
+                    showDemo={true}
+                    showError={true}
                   />
-
-                  {/* Temporary Dev Login Button */}
-                  {process.env.NEXT_PUBLIC_ENABLE_DEV_LOGIN === 'true' && (
-                    <div className="space-y-2">
-                      <Button
-                        onClick={async () => {
-                          // Use your actual dfx local identity principal
-                          const devPrincipal = 'g5pqo-7ihb2-4vqek-pou4f-pauhm-tfylr-qcvnb-f5fnp-lfjs5-i7xtv-pae'
-                          localStorage.setItem('dev_principal', devPrincipal)
-                          console.log("🔧 Dev login enabled for signup with dfx principal:", devPrincipal)
-                          // Force auth context to refresh immediately
-                          await refreshAuth()
-                        }}
-                        variant="outline"
-                        size="lg"
-                        className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
-                      >
-                        🔧 Dev Login (DFX Identity)
-                      </Button>
-
-                      <p className="text-xs text-gray-500 text-center">
-                        Run <code className="bg-gray-100 px-1 rounded">dfx identity get-principal</code> in WSL to get your principal
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
             </CardContent>
