@@ -158,7 +158,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
           <CardTitle className="text-2xl font-bold text-green-800">Registration Complete!</CardTitle>
           <CardDescription className="text-green-600">
             {formData.role === "individual"
-              ? "Welcome to dResume! You can now start building your decentralized resume."
+              ? "Welcome to CREDiT! You can now start building your decentralized resume."
               : "Your account has been created and is pending verification."}
           </CardDescription>
         </CardHeader>

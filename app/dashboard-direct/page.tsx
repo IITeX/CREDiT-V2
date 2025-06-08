@@ -87,9 +87,9 @@ function DashboardContentDirect() {
 
   // Mock user data for admin
   const mockUser = {
-    email: "admin@dresume.app",
+    email: "admin@CREDiT.app",
     role: { Company: null },
-    organizationName: "dResume Admin",
+    organizationName: "CREDiT Admin",
     verificationStatus: { Approved: null }
   }
 

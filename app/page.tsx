@@ -49,10 +49,10 @@ export default function HomePage() {
               className="text-center mb-16"
             >
               <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
-                Why Choose <span className="gradient-text">dResume</span>?
+                Why Choose <span className="gradient-text">CREDiT</span>?
               </motion.h2>
               <motion.p variants={fadeInUp} className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Traditional resumes are static and unverifiable. dResume changes that with blockchain technology.
+                Traditional resumes are static and unverifiable. CREDiT changes that with blockchain technology.
               </motion.p>
             </motion.div>
 
@@ -122,7 +122,7 @@ export default function HomePage() {
                 Supported <span className="gradient-text">Credential Types</span>
               </motion.h2>
               <motion.p variants={fadeInUp} className="text-lg text-gray-600 max-w-2xl mx-auto">
-                dResume supports a comprehensive range of verifiable credentials for your complete professional profile
+                CREDiT supports a comprehensive range of verifiable credentials for your complete professional profile
               </motion.p>
             </motion.div>
 
@@ -319,7 +319,7 @@ export default function HomePage() {
       <footer className="bg-white border-t border-green-200 py-8">
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-gray-600">© 2024 dResume. Built on Internet Computer Protocol.</p>
+            <p className="text-sm text-gray-600">© 2025 CREDiT. Built on Internet Computer Protocol.</p>
             <nav className="flex gap-6">
               <Link className="text-sm text-gray-600 hover:text-green-600 transition-colors" href="#">
                 Terms of Service

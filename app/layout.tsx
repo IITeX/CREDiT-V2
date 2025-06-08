@@ -4,9 +4,8 @@ import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
 
 export const metadata: Metadata = {
-  title: "dResume - Decentralized Proof-of-Skills Resume Platform",
+  title: "CREDiT - Decentralized Proof-of-Skills Resume Platform",
   description: "Build, verify, and share your professional credentials on the blockchain",
-  generator: "v0.dev",
 }
 
 export default function RootLayout({

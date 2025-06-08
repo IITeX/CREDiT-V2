@@ -1,4 +1,4 @@
-# dResume V2 🎓
+# CREDiT V2 🎓
 
 A decentralized resume platform built on the Internet Computer Protocol (ICP) that enables users to create, verify, and manage professional credentials as NFTs.
 
@@ -13,7 +13,7 @@ A decentralized resume platform built on the Internet Computer Protocol (ICP) th
 ### Super Quick Test (30 seconds)
 ```bash
 git clone <repository-url>
-cd dresumeV2
+cd CREDiTV2
 npm install
 npm run dev
 ```

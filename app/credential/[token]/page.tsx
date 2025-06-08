@@ -145,7 +145,7 @@ export default function CredentialPage({ params }: CredentialPageProps) {
               <span className="text-green-600 font-medium">Verified Credential</span>
             </div>
           </div>
-          <div className="text-xl font-bold">dResume</div>
+          <div className="text-xl font-bold">CREDiT</div>
         </div>
       </div>
 

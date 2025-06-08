@@ -109,7 +109,7 @@ export default function AuthPage() {
               <div className="p-3 bg-green-100 rounded-full mr-3">
                 <Shield className="h-8 w-8 text-green-600" />
               </div>
-              <h1 className="text-4xl font-bold text-green-800">dResume</h1>
+              <h1 className="text-4xl font-bold text-green-800">CREDiT</h1>
             </div>
             <p className="text-lg text-green-600 max-w-2xl mx-auto">Decentralized Proof-of-Skills Resume Platform</p>
           </motion.div>

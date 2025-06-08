@@ -156,7 +156,7 @@ export function AddCredentialDialog({ open, onOpenChange }: AddCredentialDialogP
         <DialogHeader>
           <DialogTitle>Add New Credential</DialogTitle>
           <DialogDescription>
-            Add a new verifiable credential to your dResume. Choose the type and provide details.
+            Add a new verifiable credential to your CREDiT. Choose the type and provide details.
           </DialogDescription>
         </DialogHeader>
 
