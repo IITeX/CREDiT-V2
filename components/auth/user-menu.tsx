@@ -12,12 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { useAuth } from "@/contexts/auth-context"
-import { formatPrincipal, getShortPrincipal, getDevPrincipal } from "@/lib/auth"
+import { useInternetIdentity } from "@/hooks/useInternetIdentity"
 import { Copy, ExternalLink, LogOut, User, Shield, Check, RefreshCw, Wrench, Settings } from "lucide-react"
 
 export function UserMenu() {
-  const { principal, logout, isAuthenticated, loading, refreshAuth } = useAuth()
+  const { principal, logout, isAuthenticated, loading, refresh, isDemoMode, getShortPrincipal } = useInternetIdentity()
   const [copied, setCopied] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -48,7 +47,7 @@ export function UserMenu() {
   const handleRefresh = async () => {
     setIsRefreshing(true)
     try {
-      await refreshAuth()
+      await refresh()
     } catch (error) {
       console.error("❌ Refresh failed:", error)
     } finally {
@@ -56,9 +55,9 @@ export function UserMenu() {
     }
   }
 
-  const shortPrincipal = getShortPrincipal(principal)
-  const formattedPrincipal = formatPrincipal(principal)
-  const isDevLogin = getDevPrincipal() !== null
+  const shortPrincipal = getShortPrincipal()
+  const formattedPrincipal = principal?.toString() || ""
+  const isDevLogin = isDemoMode
 
   return (
     <DropdownMenu>
@@ -66,11 +65,11 @@ export function UserMenu() {
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
             <AvatarImage src="/placeholder.svg?height=40&width=40" />
-            <AvatarFallback className={`text-primary-foreground ${isDevLogin ? 'bg-orange-500' : 'bg-primary'}`}>
+            <AvatarFallback className={`text-primary-foreground ${isDemoMode ? 'bg-orange-500' : 'bg-primary'}`}>
               {shortPrincipal.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          {isDevLogin && (
+          {isDemoMode && (
             <div className="absolute -top-1 -right-1">
               <Wrench className="h-3 w-3 text-orange-500" />
             </div>
@@ -83,10 +82,10 @@ export function UserMenu() {
             <div className="flex items-center space-x-2">
               <Shield className="h-4 w-4 text-green-600" />
               <span className="text-sm font-medium">
-                {isDevLogin ? "Dev Login" : "Internet Identity"}
+                {isDemoMode ? "Demo Login" : "Internet Identity"}
               </span>
-              <Badge variant="outline" className={`text-xs ${isDevLogin ? 'bg-orange-50 text-orange-700 border-orange-200' : ''}`}>
-                {isDevLogin ? "DEV" : "Verified"}
+              <Badge variant="outline" className={`text-xs ${isDemoMode ? 'bg-orange-50 text-orange-700 border-orange-200' : ''}`}>
+                {isDemoMode ? "DEMO" : "Verified"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">

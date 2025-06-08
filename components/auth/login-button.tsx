@@ -46,13 +46,24 @@ export function LoginButton({
     setShowSuccess(false)
 
     try {
-      const success = await login()
-      if (!success && error) {
-        onError?.(error.message)
+      const result = await login()
+      if (!result.success && result.error) {
+        // If primary login fails, try alternative method
+        if (result.error.type === 'CONNECTION_CLOSED' || result.error.type === 'UNKNOWN_ERROR') {
+          console.log("🔄 Trying alternative login method...")
+          const { loginWithAlternativeConfig } = await import('@/lib/auth')
+          const altResult = await loginWithAlternativeConfig()
+
+          if (!altResult.success && altResult.error) {
+            onError?.(altResult.error.message + " Please try the Demo Login button as a backup.")
+          }
+        } else {
+          onError?.(result.error.message + " Please try the Demo Login button as a backup.")
+        }
       }
     } catch (err) {
       console.error("❌ Login error:", err)
-      onError?.("An unexpected error occurred during login")
+      onError?.("An unexpected error occurred during login. Please try the Demo Login button as a backup.")
     } finally {
       // Don't set isLoggingIn to false here - let the useEffect handle it
       // This prevents the button from flickering between states

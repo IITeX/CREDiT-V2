@@ -32,7 +32,7 @@ import { ICErrorBoundary } from "@/components/error/ic-error-boundary"
 import { CredentialLoadingState, ProfileLoadingState } from "@/components/error/ic-loading-state"
 import { NetworkStatus } from "@/components/error/network-status"
 import { ICIntegrationTester } from "@/components/testing/ic-integration-tester"
-import { useAuth } from "@/contexts/auth-context"
+import { useInternetIdentity } from "@/hooks/useInternetIdentity"
 import { formatPrincipal } from "@/lib/auth"
 import { useUserManagement, useCredentials } from "@/hooks/useIC"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
@@ -120,7 +120,7 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
-  const { principal } = useAuth()
+  const { principal, isAuthenticated } = useInternetIdentity()
   const router = useRouter()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
@@ -130,11 +130,12 @@ function DashboardContent() {
 
   // Load user data and credentials on mount
   useEffect(() => {
-    if (principal) {
+    if (isAuthenticated && principal) {
+      console.log('🔄 Loading user profile and credentials for principal:', principal.toString())
       getMyProfile().catch(console.error)
       getMyCredentials().catch(console.error)
     }
-  }, [principal, getMyProfile, getMyCredentials])
+  }, [isAuthenticated, principal, getMyProfile, getMyCredentials])
 
   // Redirect based on user role
   useEffect(() => {
@@ -205,7 +206,8 @@ function DashboardContent() {
   }
   
   const refreshData = async () => {
-    if (principal) {
+    if (isAuthenticated && principal) {
+      console.log('🔄 Refreshing dashboard data...')
       await Promise.all([
         getMyProfile().catch(console.error),
         getMyCredentials().catch(console.error)

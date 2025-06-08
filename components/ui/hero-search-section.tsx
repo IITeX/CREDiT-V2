@@ -24,26 +24,44 @@ export function HeroSearchSection() {
     setSearchError("")
 
     try {
+      console.log('🔍 Searching for token:', searchToken.trim())
+
       // First check mock data for demo purposes
       const mockCertificate = getMockCertificateByTokenId(searchToken.trim())
       if (mockCertificate) {
+        console.log('✅ Found mock certificate:', mockCertificate)
         // Navigate to credential detail page with mock data
         window.location.href = `/credential/${searchToken.trim()}`
         return
       }
 
-      // Then check actual backend
+      // Then check actual deployed canister
+      console.log('🔍 Searching in deployed credential_nft canister...')
       const credential = await getCredentialByToken(searchToken.trim())
 
       if (credential) {
+        console.log('✅ Found credential in canister:', credential)
         // Navigate to credential detail page
-        window.location.href = `/credential/${searchToken}`
+        window.location.href = `/credential/${searchToken.trim()}`
       } else {
-        setSearchError("Credential not found. Please check the token ID and try again.")
+        console.log('❌ Credential not found in canister')
+        setSearchError(`Credential not found for token "${searchToken.trim()}". Please check the token ID and try again.`)
       }
     } catch (error) {
-      console.error('Search error:', error)
-      setSearchError("Error searching for credential. Please try again.")
+      console.error('❌ Search error:', error)
+
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('Not authenticated')) {
+          setSearchError("Authentication required for search. Please login first or try a demo token like 'ED-2025-001'.")
+        } else if (error.message.includes('Call failed') || error.message.includes('CORS')) {
+          setSearchError("Network error. Please check your connection and try again.")
+        } else {
+          setSearchError(`Search error: ${error.message}`)
+        }
+      } else {
+        setSearchError("Error searching for credential. Please try again.")
+      }
     } finally {
       setIsSearching(false)
     }

@@ -66,23 +66,38 @@ function IssuerDashboardContent() {
 
   // Function to fetch issuer's credentials
   const fetchIssuerCredentials = useCallback(async () => {
-    if (!principal) return
+    if (!principal) {
+      console.log('❌ No principal available for fetching credentials')
+      return
+    }
 
     try {
+      console.log('🔄 Fetching issuer credentials for principal:', principal.toText())
       const credentials = await getCredentialsByIssuer()
+      console.log('✅ Fetched credentials:', credentials)
+
       setIssuerCredentials(credentials)
 
       // Calculate stats
       const uniqueRecipients = new Set(credentials.map(c => c.recipient)).size
-      setStats({
+      const newStats = {
         totalTokens: credentials.length,
         activeCredentials: credentials.filter(c => !c.isRevoked).length,
         recipients: uniqueRecipients
-      })
+      }
+
+      console.log('📊 Updated stats:', newStats)
+      setStats(newStats)
+
     } catch (error) {
-      console.error('Error fetching issuer credentials:', error)
+      console.error('❌ Error fetching issuer credentials:', error)
+      toast({
+        title: "Error Loading Credentials",
+        description: "Failed to load your issued credentials. Please refresh the page.",
+        variant: "destructive",
+      })
     }
-  }, [principal, getCredentialsByIssuer])
+  }, [principal, getCredentialsByIssuer, toast])
 
   // Load user data and credentials on mount
   useEffect(() => {
@@ -229,8 +244,15 @@ function IssuerDashboardContent() {
       setGeneratedTokens([])
       setTokenFiles({})
 
-      // Refresh issuer credentials to update stats
+      // Refresh issuer credentials to update stats and display new tokens
+      console.log('🔄 Refreshing issuer credentials to show new tokens...')
       await fetchIssuerCredentials()
+
+      // Force a small delay to ensure the canister has processed the new tokens
+      setTimeout(async () => {
+        console.log('🔄 Second refresh to ensure all tokens are displayed...')
+        await fetchIssuerCredentials()
+      }, 2000)
     } catch (error) {
       console.error('Error saving tokens:', error)
       toast({

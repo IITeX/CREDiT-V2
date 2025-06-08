@@ -309,7 +309,7 @@ async function drawCertificate(
 }
 
 /**
- * Professional Blue Template - Elegant and modern
+ * Professional Blue Template - Elegant and modern with enhanced aesthetics
  */
 async function drawProfessionalTemplate(
   ctx: CanvasRenderingContext2D,
@@ -319,87 +319,123 @@ async function drawProfessionalTemplate(
 ): Promise<void> {
   const { width, height } = canvas
 
-  // Gradient background
-  const gradient = ctx.createLinearGradient(0, 0, width, height)
-  gradient.addColorStop(0, '#f8fafc')
+  // Sophisticated gradient background
+  const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height) / 2)
+  gradient.addColorStop(0, '#ffffff')
+  gradient.addColorStop(0.7, '#f8fafc')
   gradient.addColorStop(1, '#e2e8f0')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, width, height)
 
-  // Decorative border with gradient
+  // Elegant outer border with shadow effect
+  ctx.shadowColor = 'rgba(30, 64, 175, 0.3)'
+  ctx.shadowBlur = 20
+  ctx.shadowOffsetX = 0
+  ctx.shadowOffsetY = 10
+
   const borderGradient = ctx.createLinearGradient(0, 0, width, 0)
   borderGradient.addColorStop(0, '#1e40af')
-  borderGradient.addColorStop(0.5, '#3b82f6')
+  borderGradient.addColorStop(0.3, '#3b82f6')
+  borderGradient.addColorStop(0.7, '#3b82f6')
   borderGradient.addColorStop(1, '#1e40af')
 
   ctx.strokeStyle = borderGradient
-  ctx.lineWidth = 12
-  ctx.strokeRect(30, 30, width - 60, height - 60)
+  ctx.lineWidth = 15
+  ctx.strokeRect(25, 25, width - 50, height - 50)
 
-  // Inner decorative frame
-  ctx.strokeStyle = '#e2e8f0'
-  ctx.lineWidth = 2
-  ctx.strokeRect(50, 50, width - 100, height - 100)
+  // Reset shadow
+  ctx.shadowColor = 'transparent'
+  ctx.shadowBlur = 0
+  ctx.shadowOffsetX = 0
+  ctx.shadowOffsetY = 0
 
-  // Top decorative elements
-  drawDecorativeCorners(ctx, width, height, '#1e40af')
+  // Inner elegant frame with rounded corners effect
+  ctx.strokeStyle = '#cbd5e0'
+  ctx.lineWidth = 3
+  ctx.strokeRect(45, 45, width - 90, height - 90)
 
-  // Header section with elegant typography
-  ctx.fillStyle = '#1e40af'
-  ctx.font = 'bold 56px Georgia, serif'
+  // Decorative corner flourishes
+  drawEnhancedCorners(ctx, width, height, '#1e40af')
+
+  // Elegant header with improved typography
+  const headerGradient = ctx.createLinearGradient(0, 120, 0, 160)
+  headerGradient.addColorStop(0, '#1e40af')
+  headerGradient.addColorStop(1, '#3730a3')
+  ctx.fillStyle = headerGradient
+  ctx.font = 'bold 64px Georgia, serif'
   ctx.textAlign = 'center'
+  ctx.letterSpacing = '4px'
   ctx.fillText('CERTIFICATE', width / 2, 150)
 
-  // Elegant subtitle
-  ctx.font = '28px Georgia, serif'
+  // Sophisticated subtitle with better spacing
+  ctx.font = '32px Georgia, serif'
   ctx.fillStyle = '#64748b'
-  ctx.fillText('of Achievement', width / 2, 190)
+  ctx.letterSpacing = '2px'
+  ctx.fillText('of Achievement', width / 2, 195)
 
-  // Decorative line with ornaments
-  drawDecorativeLine(ctx, width / 2 - 150, 220, 300, '#3b82f6')
+  // Enhanced decorative line with ornamental elements
+  drawEnhancedDecorativeLine(ctx, width / 2 - 180, 225, 360, '#3b82f6')
 
-  // Main content area
-  ctx.font = '22px Georgia, serif'
+  // Main content with improved spacing
+  ctx.font = '24px Georgia, serif'
   ctx.fillStyle = '#475569'
-  ctx.fillText('This is to certify that', width / 2, 280)
+  ctx.letterSpacing = '1px'
+  ctx.fillText('This is to certify that', width / 2, 290)
 
-  // Recipient name with elegant styling
-  ctx.font = 'bold 48px Georgia, serif'
-  ctx.fillStyle = '#1e40af'
-  ctx.fillText(data.recipientName, width / 2, 340)
+  // Recipient name with enhanced styling and shadow
+  ctx.shadowColor = 'rgba(30, 64, 175, 0.2)'
+  ctx.shadowBlur = 8
+  ctx.shadowOffsetY = 4
 
-  // Elegant underline
+  const nameGradient = ctx.createLinearGradient(0, 330, 0, 370)
+  nameGradient.addColorStop(0, '#1e40af')
+  nameGradient.addColorStop(1, '#1d4ed8')
+  ctx.fillStyle = nameGradient
+  ctx.font = 'bold 52px Georgia, serif'
+  ctx.letterSpacing = '2px'
+  ctx.fillText(data.recipientName, width / 2, 355)
+
+  // Reset shadow
+  ctx.shadowColor = 'transparent'
+  ctx.shadowBlur = 0
+  ctx.shadowOffsetY = 0
+
+  // Enhanced underline with gradient and ornaments
   const nameWidth = ctx.measureText(data.recipientName).width
-  const underlineGradient = ctx.createLinearGradient(width / 2 - nameWidth / 2, 0, width / 2 + nameWidth / 2, 0)
+  const underlineGradient = ctx.createLinearGradient(width / 2 - nameWidth / 2 - 20, 0, width / 2 + nameWidth / 2 + 20, 0)
   underlineGradient.addColorStop(0, 'transparent')
-  underlineGradient.addColorStop(0.2, '#3b82f6')
-  underlineGradient.addColorStop(0.8, '#3b82f6')
+  underlineGradient.addColorStop(0.1, '#3b82f6')
+  underlineGradient.addColorStop(0.5, '#1e40af')
+  underlineGradient.addColorStop(0.9, '#3b82f6')
   underlineGradient.addColorStop(1, 'transparent')
   ctx.fillStyle = underlineGradient
-  ctx.fillRect(width / 2 - nameWidth / 2, 355, nameWidth, 3)
+  ctx.fillRect(width / 2 - nameWidth / 2 - 20, 375, nameWidth + 40, 4)
 
-  // Achievement description
-  ctx.font = '22px Georgia, serif'
+  // Achievement description with better typography
+  ctx.font = '24px Georgia, serif'
   ctx.fillStyle = '#475569'
-  ctx.fillText('has successfully completed', width / 2, 400)
+  ctx.letterSpacing = '1px'
+  ctx.fillText('has successfully completed', width / 2, 425)
 
-  // Course title with emphasis
-  ctx.font = 'bold 36px Georgia, serif'
+  // Course title with enhanced emphasis
+  ctx.font = 'bold 40px Georgia, serif'
   ctx.fillStyle = '#1e40af'
-  ctx.fillText(data.title, width / 2, 450)
+  ctx.letterSpacing = '1px'
+  ctx.fillText(data.title, width / 2, 475)
 
-  // Description if provided
+  // Description with improved styling
   if (data.description && data.description.length < 80) {
-    ctx.font = 'italic 20px Georgia, serif'
+    ctx.font = 'italic 22px Georgia, serif'
     ctx.fillStyle = '#64748b'
-    ctx.fillText(data.description, width / 2, 490)
+    ctx.letterSpacing = '0.5px'
+    ctx.fillText(data.description, width / 2, 515)
   }
 
-  // Bottom section with professional layout
-  drawBottomSection(ctx, width, height, data, template)
+  // Enhanced bottom section
+  drawEnhancedBottomSection(ctx, width, height, data, template)
 
-  // Seal/Badge
-  drawProfessionalSeal(ctx, width - 150, height - 200, '#1e40af')
+  // Professional seal with improved design
+  drawEnhancedProfessionalSeal(ctx, width - 140, height - 180, '#1e40af')
 }
 
 /**
@@ -1081,4 +1117,174 @@ export async function previewCertificate(data: CertificateData): Promise<string>
  */
 export function previewCertificateHTML(data: CertificateData): string {
   return generateCertificateHTML(data)
+}
+
+/**
+ * Enhanced helper function to draw decorative corners with flourishes
+ */
+function drawEnhancedCorners(ctx: CanvasRenderingContext2D, width: number, height: number, color: string): void {
+  ctx.fillStyle = color
+  const cornerSize = 50
+
+  // Top-left ornamental corner
+  ctx.beginPath()
+  ctx.moveTo(70, 70)
+  ctx.quadraticCurveTo(70 + cornerSize / 2, 70, 70 + cornerSize, 70 + cornerSize / 4)
+  ctx.quadraticCurveTo(70 + cornerSize / 4, 70 + cornerSize / 2, 70, 70 + cornerSize)
+  ctx.closePath()
+  ctx.fill()
+
+  // Top-right ornamental corner
+  ctx.beginPath()
+  ctx.moveTo(width - 70, 70)
+  ctx.quadraticCurveTo(width - 70 - cornerSize / 2, 70, width - 70 - cornerSize, 70 + cornerSize / 4)
+  ctx.quadraticCurveTo(width - 70 - cornerSize / 4, 70 + cornerSize / 2, width - 70, 70 + cornerSize)
+  ctx.closePath()
+  ctx.fill()
+
+  // Bottom-left ornamental corner
+  ctx.beginPath()
+  ctx.moveTo(70, height - 70)
+  ctx.quadraticCurveTo(70 + cornerSize / 2, height - 70, 70 + cornerSize, height - 70 - cornerSize / 4)
+  ctx.quadraticCurveTo(70 + cornerSize / 4, height - 70 - cornerSize / 2, 70, height - 70 - cornerSize)
+  ctx.closePath()
+  ctx.fill()
+
+  // Bottom-right ornamental corner
+  ctx.beginPath()
+  ctx.moveTo(width - 70, height - 70)
+  ctx.quadraticCurveTo(width - 70 - cornerSize / 2, height - 70, width - 70 - cornerSize, height - 70 - cornerSize / 4)
+  ctx.quadraticCurveTo(width - 70 - cornerSize / 4, height - 70 - cornerSize / 2, width - 70, height - 70 - cornerSize)
+  ctx.closePath()
+  ctx.fill()
+}
+
+/**
+ * Enhanced decorative line with ornamental elements
+ */
+function drawEnhancedDecorativeLine(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, color: string): void {
+  ctx.fillStyle = color
+
+  // Main line with gradient
+  const gradient = ctx.createLinearGradient(x, y, x + width, y)
+  gradient.addColorStop(0, 'transparent')
+  gradient.addColorStop(0.2, color)
+  gradient.addColorStop(0.8, color)
+  gradient.addColorStop(1, 'transparent')
+  ctx.fillStyle = gradient
+  ctx.fillRect(x, y, width, 4)
+
+  // Ornamental elements at ends
+  ctx.fillStyle = color
+  const ornamentSize = 8
+
+  // Left ornament
+  ctx.beginPath()
+  ctx.arc(x + 20, y + 2, ornamentSize, 0, 2 * Math.PI)
+  ctx.fill()
+
+  // Right ornament
+  ctx.beginPath()
+  ctx.arc(x + width - 20, y + 2, ornamentSize, 0, 2 * Math.PI)
+  ctx.fill()
+
+  // Center ornament
+  ctx.beginPath()
+  ctx.arc(x + width / 2, y + 2, ornamentSize + 2, 0, 2 * Math.PI)
+  ctx.fill()
+}
+
+/**
+ * Enhanced bottom section with improved layout
+ */
+function drawEnhancedBottomSection(ctx: CanvasRenderingContext2D, width: number, height: number, data: CertificateData, template: CertificateTemplate): void {
+  const bottomY = height - 140
+
+  // Elegant separator line
+  const separatorGradient = ctx.createLinearGradient(100, bottomY - 40, width - 100, bottomY - 40)
+  separatorGradient.addColorStop(0, 'transparent')
+  separatorGradient.addColorStop(0.2, '#cbd5e0')
+  separatorGradient.addColorStop(0.8, '#cbd5e0')
+  separatorGradient.addColorStop(1, 'transparent')
+  ctx.fillStyle = separatorGradient
+  ctx.fillRect(100, bottomY - 40, width - 200, 2)
+
+  // Three-column layout with improved typography
+  const leftX = 150
+  const centerX = width / 2
+  const rightX = width - 150
+
+  // Left: Issuer information
+  ctx.textAlign = 'left'
+  ctx.font = '14px Georgia, serif'
+  ctx.fillStyle = '#64748b'
+  ctx.fillText('ISSUED BY', leftX, bottomY - 10)
+
+  ctx.font = 'bold 20px Georgia, serif'
+  ctx.fillStyle = '#1e40af'
+  ctx.fillText(data.issuerName, leftX, bottomY + 15)
+
+  // Center: Token ID with enhanced styling
+  ctx.textAlign = 'center'
+  ctx.font = '12px Georgia, serif'
+  ctx.fillStyle = '#64748b'
+  ctx.fillText('BLOCKCHAIN VERIFIED', centerX, bottomY - 10)
+
+  ctx.font = 'bold 16px monospace'
+  ctx.fillStyle = '#475569'
+  ctx.fillText(data.tokenId, centerX, bottomY + 15)
+
+  // Right: Date information
+  ctx.textAlign = 'right'
+  ctx.font = '14px Georgia, serif'
+  ctx.fillStyle = '#64748b'
+  ctx.fillText('DATE ISSUED', rightX, bottomY - 10)
+
+  ctx.font = 'bold 20px Georgia, serif'
+  ctx.fillStyle = '#1e40af'
+  ctx.fillText(data.issuedDate, rightX, bottomY + 15)
+}
+
+/**
+ * Enhanced professional seal with improved design
+ */
+function drawEnhancedProfessionalSeal(ctx: CanvasRenderingContext2D, x: number, y: number, color: string): void {
+  // Outer ring with gradient
+  const outerGradient = ctx.createRadialGradient(x, y, 0, x, y, 50)
+  outerGradient.addColorStop(0, color)
+  outerGradient.addColorStop(0.7, color)
+  outerGradient.addColorStop(1, 'transparent')
+
+  ctx.fillStyle = outerGradient
+  ctx.beginPath()
+  ctx.arc(x, y, 50, 0, 2 * Math.PI)
+  ctx.fill()
+
+  // Inner circle
+  ctx.fillStyle = '#ffffff'
+  ctx.beginPath()
+  ctx.arc(x, y, 35, 0, 2 * Math.PI)
+  ctx.fill()
+
+  // Border
+  ctx.strokeStyle = color
+  ctx.lineWidth = 3
+  ctx.stroke()
+
+  // Center emblem
+  ctx.fillStyle = color
+  ctx.font = 'bold 24px serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('✓', x, y + 8)
+
+  // Decorative stars around the seal
+  ctx.fillStyle = color
+  for (let i = 0; i < 8; i++) {
+    const angle = (i * Math.PI * 2) / 8
+    const starX = x + Math.cos(angle) * 65
+    const starY = y + Math.sin(angle) * 65
+
+    ctx.font = '12px serif'
+    ctx.fillText('★', starX, starY)
+  }
 }

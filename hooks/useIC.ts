@@ -1,18 +1,27 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Actor, HttpAgent } from '@dfinity/agent'
 import { Principal } from '@dfinity/principal'
-import { useAuth } from '@/contexts/auth-context'
+import { useInternetIdentity } from '@/hooks/useInternetIdentity'
 import { getConfig, getCanisterIds, validateEnvironment, isSimulationMode } from '@/lib/config'
+import {
+  createCredentialNFTActor,
+  createStorageActor,
+  handleCanisterError,
+  checkCanisterHealth,
+  getCanisterUrls
+} from '@/lib/canister-utils'
 
-// Import generated declarations if available - only for deployed canisters
+// Import generated declarations for deployed canisters
 let credentialNftIdl: any, storageIdl: any
 
 try {
-  // Try to import generated declarations for deployed canisters only
+  // Import generated declarations for deployed canisters
   credentialNftIdl = require('../src/declarations/credential_nft').idlFactory
   storageIdl = require('../src/declarations/storage').idlFactory
+  console.log('✅ Successfully loaded canister declarations')
 } catch (e) {
-  console.warn('Generated declarations not found, using fallback types')
+  console.error('❌ Failed to load canister declarations:', e)
+  console.warn('Using fallback types - some functionality may be limited')
 }
 
 // Types for when declarations are not available
@@ -118,7 +127,7 @@ const HOST = config.IC_HOST
 
 // User Management Hook - Now uses Storage Canister
 export const useUserManagement = () => {
-  const { isAuthenticated, identity, principal } = useAuth()
+  const { isAuthenticated, identity, principal } = useInternetIdentity()
   const [actor, setActor] = useState<StorageActor | null>(null)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -132,23 +141,28 @@ export const useUserManagement = () => {
         return
       }
 
-      if (storageIdl) {
-        console.log('🔧 Creating real storage actor with identity for user management')
-        const agent = new HttpAgent({ host: HOST, identity })
-
-        // Only fetch root key for local development
-        if (process.env.NEXT_PUBLIC_DFX_NETWORK === 'local') {
-          agent.fetchRootKey().catch(console.error)
-        }
-
-        const actor = Actor.createActor(storageIdl, {
-          agent,
-          canisterId: CANISTER_IDS.storage,
-        })
+      try {
+        console.log('🔧 Creating storage actor with enhanced utilities')
+        const actor = createStorageActor(identity)
         setActor(actor)
+        console.log('✅ Storage actor created successfully with enhanced utilities')
+
+        // Validate connection
+        checkCanisterHealth(identity).then(health => {
+          if (!health.storage) {
+            console.error('❌ Storage canister health check failed:', health.errors)
+          } else {
+            console.log('✅ Storage canister is healthy')
+          }
+        })
+
+      } catch (error) {
+        console.error('❌ Failed to create storage actor:', error)
+        setActor(null)
       }
     } else {
       setActor(null)
+      console.log('🔧 User not authenticated, clearing storage actor')
     }
   }, [isAuthenticated, identity])
 
@@ -225,7 +239,7 @@ export const useUserManagement = () => {
 
 // Credentials Hook
 export const useCredentials = () => {
-  const { isAuthenticated, identity, principal } = useAuth()
+  const { isAuthenticated, identity, principal } = useInternetIdentity()
   const [actor, setActor] = useState<CredentialNFTActor | null>(null)
   const [credentials, setCredentials] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -239,25 +253,43 @@ export const useCredentials = () => {
         return
       }
 
-      if (credentialNftIdl) {
-        console.log('🔧 Creating real credentials actor with identity')
-        const agent = new HttpAgent({ host: HOST, identity })
-
-        // Only fetch root key for local development
-        if (process.env.NEXT_PUBLIC_DFX_NETWORK === 'local') {
-          agent.fetchRootKey().catch(console.error)
-        }
-
-        const actor = Actor.createActor(credentialNftIdl, {
-          agent,
-          canisterId: CANISTER_IDS.credentialNft,
-        })
+      try {
+        console.log('🔧 Creating credentials actor with enhanced utilities')
+        const actor = createCredentialNFTActor(identity)
         setActor(actor)
+        console.log('✅ Credential NFT actor created successfully with enhanced utilities')
+
+        // Validate connection
+        checkCanisterHealth(identity).then(health => {
+          if (!health.credentialNft) {
+            console.error('❌ Credential NFT canister health check failed:', health.errors)
+          } else {
+            console.log('✅ Credential NFT canister is healthy')
+          }
+        })
+
+      } catch (error) {
+        console.error('❌ Failed to create credential NFT actor:', error)
+        setActor(null)
       }
     } else {
       setActor(null)
+      console.log('🔧 User not authenticated, clearing credentials actor')
     }
   }, [isAuthenticated, identity])
+
+  // Define getMyCredentials first since it's used by other functions
+  const getMyCredentials = useCallback(async () => {
+    if (!actor || !principal) return []
+    setLoading(true)
+    try {
+      const result = await actor.getCredentialsByRecipient(principal.toText())
+      setCredentials(result)
+      return result
+    } finally {
+      setLoading(false)
+    }
+  }, [actor, principal])
 
   const createCredential = useCallback(async (
     credentialType: any,
@@ -269,12 +301,28 @@ export const useCredentials = () => {
     documentHash: any[] = [],
     expiresAt: any[] = []
   ) => {
-    if (!actor) throw new Error('Not authenticated')
+    if (!actor) {
+      console.error('❌ No actor available for credential creation')
+      throw new Error('Not authenticated - please login with Internet Identity first')
+    }
+
+    console.log('🔄 Creating credential with data:', {
+      credentialType,
+      title,
+      description,
+      recipient,
+      recipientName,
+      metadata,
+      canisterId: CANISTER_IDS.credentialNft
+    })
+
     setLoading(true)
     try {
       // Convert metadata to array of tuples format expected by canister
       const metadataArray = Object.entries(metadata)
+      console.log('📝 Metadata array:', metadataArray)
 
+      console.log('🚀 Calling createCredential on canister...')
       const result = await actor.createCredential(
         credentialType,
         title,
@@ -286,15 +334,19 @@ export const useCredentials = () => {
         documentHash.length > 0 ? [documentHash[0]] : []
       )
 
+      console.log('📥 Received result from canister:', result)
+
       if ('Ok' in result) {
-        console.log('Credential and NFT created successfully:', result.Ok)
+        console.log('✅ Credential and NFT created successfully:', result.Ok)
         // result.Ok contains [Credential, NFT] tuple
         const [credential, nft] = result.Ok
-        console.log('Credential:', credential)
-        console.log('NFT Token ID:', nft.tokenId)
+        console.log('📄 Credential:', credential)
+        console.log('🎫 NFT Token ID:', nft.tokenId)
 
         // Refresh credentials list
+        console.log('🔄 Refreshing credentials list...')
         await getMyCredentials()
+
         return {
           credential,
           nft,
@@ -302,16 +354,21 @@ export const useCredentials = () => {
           credentialId: credential.id     // For credential operations (SK-1749407266732902981)
         }
       } else {
-        console.error('Failed to create credential:', result.Err)
-        throw new Error(Object.keys(result.Err)[0])
+        console.error('❌ Failed to create credential:', result.Err)
+        const errorKey = Object.keys(result.Err)[0]
+        const errorValue = result.Err[errorKey]
+        throw new Error(`Canister error: ${errorKey}${errorValue ? ` - ${errorValue}` : ''}`)
       }
     } catch (error) {
-      console.error('Error creating credential:', error)
-      throw error
+      console.error('❌ Error creating credential:', error)
+
+      // Use enhanced error handling
+      const enhancedError = handleCanisterError(error, 'credential creation')
+      throw enhancedError
     } finally {
       setLoading(false)
     }
-  }, [actor])
+  }, [actor, getMyCredentials])
 
   const createSoulBoundToken = useCallback(async (
     credentialType: any,
@@ -367,19 +424,7 @@ export const useCredentials = () => {
     } finally {
       setLoading(false)
     }
-  }, [actor])
-
-  const getMyCredentials = useCallback(async () => {
-    if (!actor || !principal) return []
-    setLoading(true)
-    try {
-      const result = await actor.getCredentialsByRecipient(principal.toText())
-      setCredentials(result)
-      return result
-    } finally {
-      setLoading(false)
-    }
-  }, [actor, principal])
+  }, [actor, getMyCredentials])
 
   const getCredentialsByIssuer = useCallback(async (issuerPrincipal?: string) => {
     if (!actor) throw new Error('Not authenticated')
@@ -494,7 +539,7 @@ export const useCredentials = () => {
 
 // Verification Hook - Now uses Storage Canister
 export const useVerification = () => {
-  const { isAuthenticated, identity } = useAuth()
+  const { isAuthenticated, identity } = useInternetIdentity()
   const [actor, setActor] = useState<StorageActor | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -609,7 +654,7 @@ export const useVerification = () => {
 
 // Storage Hook
 export const useStorage = () => {
-  const { isAuthenticated, identity } = useAuth()
+  const { isAuthenticated, identity } = useInternetIdentity()
   const [actor, setActor] = useState<StorageActor | null>(null)
   const [loading, setLoading] = useState(false)
 

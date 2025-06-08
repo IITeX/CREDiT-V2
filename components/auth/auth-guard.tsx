@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import type { ReactNode } from "react"
-import { useAuth } from "@/contexts/auth-context"
+import { useInternetIdentity } from "@/hooks/useInternetIdentity"
 import { useUserManagement } from "@/hooks/useIC"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { LoginButton } from "./login-button"
+import { InternetIdentityButton } from "./internet-identity-button"
 import { ICPRegistrationForm } from "./icp-registration-form"
 import { Loader2, Shield, AlertCircle } from "lucide-react"
 
@@ -19,7 +19,7 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children, fallback, requireRegistration = true, allowedRoles }: AuthGuardProps) {
-  const { isAuthenticated, loading: authLoading, principal, error: authError } = useAuth()
+  const { isAuthenticated, loading: authLoading, principal, error: authError } = useInternetIdentity()
   const { user, getMyProfile, loading: userLoading } = useUserManagement()
 
   const [authState, setAuthState] = useState<'checking' | 'login-required' | 'registration-required' | 'authorized' | 'unauthorized'>('checking')
@@ -136,7 +136,17 @@ export function AuthGuard({ children, fallback, requireRegistration = true, allo
                 </Alert>
               )}
 
-              <LoginButton className="w-full" size="lg" showError={false} />
+              <InternetIdentityButton
+                className="w-full"
+                size="lg"
+                showError={false}
+                onSuccess={() => {
+                  console.log("✅ Internet Identity login successful in AuthGuard")
+                }}
+                onError={(error) => {
+                  console.error("❌ Internet Identity login failed in AuthGuard:", error)
+                }}
+              />
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">
                   Your identity is secured by the Internet Computer Protocol
