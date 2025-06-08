@@ -4,23 +4,19 @@ import { Principal } from '@dfinity/principal'
 import { useAuth } from '@/contexts/auth-context'
 import { getConfig, getCanisterIds, validateEnvironment, isSimulationMode } from '@/lib/config'
 
-// Import generated declarations if available
-let userManagementIdl: any, credentialNftIdl: any, verificationIdl: any, storageIdl: any
+// Import generated declarations if available - only for deployed canisters
+let credentialNftIdl: any, storageIdl: any
 
 try {
-  // Try to import generated declarations
-  userManagementIdl = require('../src/declarations/user_management').idlFactory
+  // Try to import generated declarations for deployed canisters only
   credentialNftIdl = require('../src/declarations/credential_nft').idlFactory
-  verificationIdl = require('../src/declarations/verification').idlFactory
   storageIdl = require('../src/declarations/storage').idlFactory
 } catch (e) {
   console.warn('Generated declarations not found, using fallback types')
 }
 
 // Types for when declarations are not available
-type UserManagementActor = any
 type CredentialNFTActor = any
-type VerificationActor = any
 type StorageActor = any
 
 // Mock functions for simulation mode
@@ -113,10 +109,10 @@ const config = getConfig()
 const CANISTER_IDS = getCanisterIds()
 const HOST = config.IC_HOST
 
-// User Management Hook
+// User Management Hook - Now uses Storage Canister
 export const useUserManagement = () => {
   const { isAuthenticated, identity, principal } = useAuth()
-  const [actor, setActor] = useState<UserManagementActor | null>(null)
+  const [actor, setActor] = useState<StorageActor | null>(null)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(false)
 
@@ -125,21 +121,21 @@ export const useUserManagement = () => {
       // Only use simulation mode if explicitly enabled
       if (isSimulationMode()) {
         console.log('🔧 Using mock actor for user management (simulation mode)')
-        setActor(createMockActor('UserManagement'))
+        setActor(createMockActor('Storage'))
         return
       }
 
-      if (userManagementIdl) {
-        console.log('🔧 Creating real user management actor with identity')
+      if (storageIdl) {
+        console.log('🔧 Creating real storage actor with identity for user management')
         const agent = new HttpAgent({ host: HOST, identity })
 
         if (process.env.NODE_ENV !== 'production') {
           agent.fetchRootKey().catch(console.error)
         }
 
-        const actor = Actor.createActor(userManagementIdl, {
+        const actor = Actor.createActor(storageIdl, {
           agent,
-          canisterId: CANISTER_IDS.userManagement,
+          canisterId: CANISTER_IDS.storage,
         })
         setActor(actor)
       }
@@ -191,7 +187,7 @@ export const useUserManagement = () => {
     if (!actor) throw new Error('Not authenticated')
     setLoading(true)
     try {
-      const result = await actor.updateVerificationStatus(
+      const result = await actor.updateUserVerificationStatus(
         Principal.fromText(userPrincipal),
         status
       )
@@ -383,31 +379,31 @@ export const useCredentials = () => {
   }
 }
 
-// Verification Hook
+// Verification Hook - Now uses Storage Canister
 export const useVerification = () => {
   const { isAuthenticated, identity } = useAuth()
-  const [actor, setActor] = useState<VerificationActor | null>(null)
+  const [actor, setActor] = useState<StorageActor | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated && identity) {
       if (isSimulationMode()) {
         console.log('🔧 Using mock actor for verification (simulation mode)')
-        setActor(createMockActor('Verification'))
+        setActor(createMockActor('Storage'))
         return
       }
 
-      if (verificationIdl) {
-        console.log('🔧 Creating real verification actor with identity')
+      if (storageIdl) {
+        console.log('🔧 Creating real storage actor with identity for verification')
         const agent = new HttpAgent({ host: HOST, identity })
 
         if (process.env.NODE_ENV !== 'production') {
           agent.fetchRootKey().catch(console.error)
         }
 
-        const actor = Actor.createActor(verificationIdl, {
+        const actor = Actor.createActor(storageIdl, {
           agent,
-          canisterId: CANISTER_IDS.verification,
+          canisterId: CANISTER_IDS.storage,
         })
         setActor(actor)
       }
@@ -417,17 +413,17 @@ export const useVerification = () => {
   }, [isAuthenticated, identity])
 
   const submitVerificationRequest = useCallback(async (
-    credentialId: string,
-    verifierPrincipal: string,
-    message: string
+    role: any,
+    organizationName: string,
+    documentHashes: string[]
   ) => {
     if (!actor) throw new Error('Not authenticated')
     setLoading(true)
     try {
       const result = await actor.submitVerificationRequest(
-        credentialId,
-        Principal.fromText(verifierPrincipal),
-        message
+        role,
+        organizationName,
+        documentHashes
       )
       if ('Ok' in result) {
         return result.Ok
@@ -439,7 +435,62 @@ export const useVerification = () => {
     }
   }, [actor])
 
-  return { submitVerificationRequest, loading }
+  const getMyVerificationRequests = useCallback(async () => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      const result = await actor.getMyVerificationRequests()
+      return result
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
+  const getPendingVerificationRequests = useCallback(async () => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      const result = await actor.getPendingVerificationRequests()
+      if ('Ok' in result) {
+        return result.Ok
+      } else {
+        throw new Error(Object.keys(result.Err)[0])
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
+  const reviewVerificationRequest = useCallback(async (
+    requestId: string,
+    status: any,
+    notes?: string
+  ) => {
+    if (!actor) throw new Error('Not authenticated')
+    setLoading(true)
+    try {
+      const result = await actor.reviewVerificationRequest(
+        requestId,
+        status,
+        notes ? [notes] : []
+      )
+      if ('Ok' in result) {
+        return result.Ok
+      } else {
+        throw new Error(Object.keys(result.Err)[0])
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [actor])
+
+  return {
+    submitVerificationRequest,
+    getMyVerificationRequests,
+    getPendingVerificationRequests,
+    reviewVerificationRequest,
+    loading
+  }
 }
 
 // Storage Hook

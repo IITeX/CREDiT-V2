@@ -57,9 +57,8 @@ export function isDevelopment(): boolean {
 
 export function getCanisterIds() {
   return {
-    userManagement: process.env.NEXT_PUBLIC_USER_MANAGEMENT_CANISTER_ID || "",
+    // Only deployed canisters - user_management and verification merged into storage
     credentialNft: process.env.NEXT_PUBLIC_CREDENTIAL_NFT_CANISTER_ID || "",
-    verification: process.env.NEXT_PUBLIC_VERIFICATION_CANISTER_ID || "",
     storage: process.env.NEXT_PUBLIC_STORAGE_CANISTER_ID || "",
     internetIdentity: process.env.NEXT_PUBLIC_INTERNET_IDENTITY_CANISTER_ID || "rdmx6-jaaaa-aaaah-qdrha-cai"
   }
@@ -68,28 +67,20 @@ export function getCanisterIds() {
 export function validateEnvironment(): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
   const canisterIds = getCanisterIds()
-  
-  // Check if all required canister IDs are present
-  if (!canisterIds.userManagement) {
-    errors.push('NEXT_PUBLIC_USER_MANAGEMENT_CANISTER_ID is not set')
-  }
-  
+
+  // Check if all required canister IDs are present (only deployed canisters)
   if (!canisterIds.credentialNft) {
     errors.push('NEXT_PUBLIC_CREDENTIAL_NFT_CANISTER_ID is not set')
   }
-  
-  if (!canisterIds.verification) {
-    errors.push('NEXT_PUBLIC_VERIFICATION_CANISTER_ID is not set')
-  }
-  
+
   if (!canisterIds.storage) {
     errors.push('NEXT_PUBLIC_STORAGE_CANISTER_ID is not set')
   }
-  
+
   if (!canisterIds.internetIdentity) {
     errors.push('NEXT_PUBLIC_INTERNET_IDENTITY_CANISTER_ID is not set')
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors
