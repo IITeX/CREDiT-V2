@@ -1,4 +1,8 @@
-// Certificate generation and download functionality
+/**
+ * Certificate Generator Utility
+ * Generates and downloads professional certificates as PNG images
+ * Uses browser's built-in Canvas API - no external dependencies required
+ */
 
 export interface CertificateData {
   tokenId: string
@@ -9,7 +13,67 @@ export interface CertificateData {
   description?: string
   metadata?: { [key: string]: string }
   template?: 'professional' | 'academic' | 'corporate' | 'achievement' | 'excellence'
+  credentialType?: string
 }
+
+export interface CertificateTemplate {
+  id: string
+  name: string
+  backgroundColor: string
+  primaryColor: string
+  secondaryColor: string
+  borderColor: string
+  fontFamily: string
+}
+
+// Professional certificate templates
+export const CERTIFICATE_TEMPLATES: CertificateTemplate[] = [
+  {
+    id: 'professional',
+    name: 'Professional Blue',
+    backgroundColor: '#ffffff',
+    primaryColor: '#1e40af',
+    secondaryColor: '#3b82f6',
+    borderColor: '#1e40af',
+    fontFamily: 'Arial, sans-serif'
+  },
+  {
+    id: 'academic',
+    name: 'Academic Navy',
+    backgroundColor: '#1a365d',
+    primaryColor: '#f7fafc',
+    secondaryColor: '#ffd700',
+    borderColor: '#f7fafc',
+    fontFamily: 'Times New Roman, serif'
+  },
+  {
+    id: 'corporate',
+    name: 'Corporate Gray',
+    backgroundColor: '#2d3748',
+    primaryColor: '#ffffff',
+    secondaryColor: '#4299e1',
+    borderColor: '#4a5568',
+    fontFamily: 'Arial, sans-serif'
+  },
+  {
+    id: 'achievement',
+    name: 'Achievement Gold',
+    backgroundColor: '#fefdf8',
+    primaryColor: '#92400e',
+    secondaryColor: '#d97706',
+    borderColor: '#92400e',
+    fontFamily: 'Georgia, serif'
+  },
+  {
+    id: 'excellence',
+    name: 'Excellence Purple',
+    backgroundColor: '#faf5ff',
+    primaryColor: '#7c3aed',
+    secondaryColor: '#a855f7',
+    borderColor: '#7c3aed',
+    fontFamily: 'Arial, sans-serif'
+  }
+]
 
 export function generateCertificateHTML(data: CertificateData): string {
   const template = data.template || 'professional'
@@ -130,46 +194,57 @@ export function generateCertificateHTML(data: CertificateData): string {
   return templates[template] || templates.professional
 }
 
+/**
+ * Generates a certificate image and downloads it as PNG using Canvas API
+ */
 export async function downloadCertificateAsPNG(data: CertificateData): Promise<void> {
   try {
-    // Create a temporary div to render the certificate
-    const tempDiv = document.createElement('div')
-    tempDiv.innerHTML = generateCertificateHTML(data)
-    tempDiv.style.position = 'absolute'
-    tempDiv.style.left = '-9999px'
-    tempDiv.style.top = '-9999px'
-    document.body.appendChild(tempDiv)
+    console.log('🎨 Generating certificate...', data)
 
-    // Use html2canvas to convert to image
-    const html2canvas = (await import('html2canvas')).default
-    const canvas = await html2canvas(tempDiv.firstElementChild as HTMLElement, {
-      width: 800,
-      height: 600,
-      scale: 2, // Higher resolution
-      backgroundColor: null,
-      logging: false,
-      useCORS: true
-    })
+    // Get template
+    const templateId = data.template || 'professional'
+    const template = CERTIFICATE_TEMPLATES.find(t => t.id === templateId) || CERTIFICATE_TEMPLATES[0]
 
-    // Clean up
-    document.body.removeChild(tempDiv)
+    // Create canvas
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+
+    if (!ctx) {
+      throw new Error('Canvas context not available')
+    }
+
+    // Set canvas size (A4 landscape proportions)
+    canvas.width = 1200
+    canvas.height = 850
+
+    // Draw certificate
+    await drawCertificate(ctx, canvas, data, template)
 
     // Convert to blob and download
     canvas.toBlob((blob) => {
-      if (blob) {
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `certificate-${data.tokenId}.png`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
+      if (!blob) {
+        throw new Error('Failed to generate certificate blob')
       }
-    }, 'image/png', 1.0)
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `certificate-${data.tokenId}-${data.recipientName.replace(/\s+/g, '-')}.png`
+
+      // Trigger download
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      // Cleanup
+      URL.revokeObjectURL(url)
+
+      console.log('✅ Certificate downloaded successfully!')
+    }, 'image/png', 0.95)
 
   } catch (error) {
-    console.error('Error generating certificate:', error)
+    console.error('❌ Certificate generation failed:', error)
+
     // Fallback: open certificate in new window for manual save
     const newWindow = window.open('', '_blank')
     if (newWindow) {
@@ -185,7 +260,6 @@ export async function downloadCertificateAsPNG(data: CertificateData): Promise<v
           <body>
             ${generateCertificateHTML(data)}
             <script>
-              // Auto-print dialog
               setTimeout(() => window.print(), 1000);
             </script>
           </body>
@@ -196,6 +270,171 @@ export async function downloadCertificateAsPNG(data: CertificateData): Promise<v
   }
 }
 
-export function previewCertificate(data: CertificateData): string {
+/**
+ * Draws the certificate on the canvas
+ */
+async function drawCertificate(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  data: CertificateData,
+  template: CertificateTemplate
+): Promise<void> {
+  const { width, height } = canvas
+
+  // Clear canvas
+  ctx.clearRect(0, 0, width, height)
+
+  // Background
+  ctx.fillStyle = template.backgroundColor
+  ctx.fillRect(0, 0, width, height)
+
+  // Border
+  ctx.strokeStyle = template.borderColor
+  ctx.lineWidth = 8
+  ctx.strokeRect(20, 20, width - 40, height - 40)
+
+  // Inner border
+  ctx.strokeStyle = template.secondaryColor
+  ctx.lineWidth = 2
+  ctx.strokeRect(40, 40, width - 80, height - 80)
+
+  // Header decoration
+  ctx.fillStyle = template.primaryColor
+  ctx.fillRect(60, 60, width - 120, 8)
+
+  // Title "CERTIFICATE"
+  ctx.fillStyle = template.primaryColor
+  ctx.font = `bold 48px ${template.fontFamily}`
+  ctx.textAlign = 'center'
+  ctx.fillText('CERTIFICATE', width / 2, 140)
+
+  // Subtitle based on template
+  ctx.font = `24px ${template.fontFamily}`
+  ctx.fillStyle = template.secondaryColor
+  const subtitle = template.id === 'academic' ? 'OF ACADEMIC ACHIEVEMENT' :
+                   template.id === 'corporate' ? 'OF PROFESSIONAL COMPLETION' :
+                   'OF ACHIEVEMENT'
+  ctx.fillText(subtitle, width / 2, 180)
+
+  // Decorative line
+  ctx.fillStyle = template.secondaryColor
+  ctx.fillRect(width / 2 - 100, 200, 200, 2)
+
+  // "This is to certify that"
+  ctx.font = `18px ${template.fontFamily}`
+  ctx.fillStyle = template.primaryColor
+  ctx.fillText('This is to certify that', width / 2, 250)
+
+  // Recipient name (large, prominent)
+  ctx.font = `bold 42px ${template.fontFamily}`
+  ctx.fillStyle = template.id === 'academic' ? template.secondaryColor : template.primaryColor
+  ctx.fillText(data.recipientName, width / 2, 310)
+
+  // Underline for name
+  const nameWidth = ctx.measureText(data.recipientName).width
+  ctx.fillRect(width / 2 - nameWidth / 2, 320, nameWidth, 2)
+
+  // Achievement text
+  ctx.font = `20px ${template.fontFamily}`
+  ctx.fillStyle = template.primaryColor
+  ctx.fillText('has successfully completed', width / 2, 360)
+
+  // Course/Achievement title
+  ctx.font = `bold 32px ${template.fontFamily}`
+  ctx.fillStyle = template.secondaryColor
+  ctx.fillText(data.title, width / 2, 410)
+
+  // Description (if provided and not too long)
+  if (data.description && data.description.length < 100) {
+    ctx.font = `18px ${template.fontFamily}`
+    ctx.fillStyle = template.primaryColor
+    ctx.fillText(data.description, width / 2, 450)
+  }
+
+  // Bottom section with details
+  const bottomY = height - 180
+
+  // Left side - Issue date
+  ctx.textAlign = 'left'
+  ctx.font = `16px ${template.fontFamily}`
+  ctx.fillStyle = template.primaryColor
+  ctx.fillText('Date of Issue:', 100, bottomY)
+  ctx.font = `bold 18px ${template.fontFamily}`
+  ctx.fillText(data.issuedDate, 100, bottomY + 25)
+
+  // Center - Token ID
+  ctx.textAlign = 'center'
+  ctx.font = `16px ${template.fontFamily}`
+  ctx.fillStyle = template.primaryColor
+  ctx.fillText('Certificate ID:', width / 2, bottomY)
+  ctx.font = `bold 18px ${template.fontFamily}`
+  ctx.fillText(data.tokenId, width / 2, bottomY + 25)
+
+  // Right side - Issuer
+  ctx.textAlign = 'right'
+  ctx.font = `16px ${template.fontFamily}`
+  ctx.fillStyle = template.primaryColor
+  ctx.fillText('Issued by:', width - 100, bottomY)
+  ctx.font = `bold 18px ${template.fontFamily}`
+  ctx.fillText(data.issuerName, width - 100, bottomY + 25)
+
+  // Signature line
+  ctx.strokeStyle = template.primaryColor
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(width - 250, bottomY + 60)
+  ctx.lineTo(width - 100, bottomY + 60)
+  ctx.stroke()
+
+  ctx.textAlign = 'right'
+  ctx.font = `14px ${template.fontFamily}`
+  ctx.fillStyle = template.secondaryColor
+  ctx.fillText('Authorized Signature', width - 100, bottomY + 80)
+
+  // Footer decoration
+  ctx.fillStyle = template.secondaryColor
+  ctx.fillRect(60, height - 68, width - 120, 8)
+
+  // Credential type badge (top right)
+  if (data.credentialType) {
+    const badgeX = width - 200
+    const badgeY = 100
+    ctx.fillStyle = template.secondaryColor
+    ctx.fillRect(badgeX - 10, badgeY - 10, 140, 40)
+    ctx.fillStyle = template.backgroundColor
+    ctx.font = `bold 14px ${template.fontFamily}`
+    ctx.textAlign = 'center'
+    ctx.fillText(data.credentialType.toUpperCase(), badgeX + 60, badgeY + 15)
+  }
+
+  console.log('🎨 Certificate drawn successfully')
+}
+
+/**
+ * Preview certificate as data URL
+ */
+export async function previewCertificate(data: CertificateData): Promise<string> {
+  const templateId = data.template || 'professional'
+  const template = CERTIFICATE_TEMPLATES.find(t => t.id === templateId) || CERTIFICATE_TEMPLATES[0]
+
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) {
+    throw new Error('Canvas context not available')
+  }
+
+  canvas.width = 1200
+  canvas.height = 850
+
+  await drawCertificate(ctx, canvas, data, template)
+
+  return canvas.toDataURL('image/png', 0.95)
+}
+
+/**
+ * Legacy function for HTML preview (kept for backward compatibility)
+ */
+export function previewCertificateHTML(data: CertificateData): string {
   return generateCertificateHTML(data)
 }

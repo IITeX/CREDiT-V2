@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import { CertificatePreview } from "@/components/certificate/certificate-preview"
 import { CertificateForm } from "@/components/certificate/certificate-form"
+import { downloadCertificateAsPNG, type CertificateData } from "@/lib/certificate-generator"
 
 const templates = {
   professional: {
@@ -156,11 +157,32 @@ function CertificateBuilderContent() {
   const handleDownload = async () => {
     setIsDownloading(true)
     try {
-      // TODO: Implement certificate download as PNG
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      console.log('Downloading certificate...')
+      // Convert form data to certificate data format
+      const certificateDataForDownload: CertificateData = {
+        tokenId: certificateData.tokenId || `CERT-${Date.now()}`,
+        title: certificateData.title,
+        recipientName: certificateData.recipientName,
+        issuerName: certificateData.organizationName,
+        issuedDate: new Date(certificateData.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        description: `${certificateData.description} ${certificateData.courseName}`.trim(),
+        template: selectedTemplate as any,
+        credentialType: currentTemplate.name
+      }
+
+      console.log('🎨 Downloading certificate with data:', certificateDataForDownload)
+
+      // Use the new certificate generator
+      await downloadCertificateAsPNG(certificateDataForDownload)
+
     } catch (error) {
-      console.error('Error downloading certificate:', error)
+      console.error('❌ Error downloading certificate:', error)
+
+      // Show user-friendly error message
+      alert('Failed to download certificate. Please try again or check your browser settings.')
     } finally {
       setIsDownloading(false)
     }

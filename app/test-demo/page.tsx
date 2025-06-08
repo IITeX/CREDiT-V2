@@ -47,9 +47,48 @@ export default function TestDemoPage() {
 
     // Test 2: Issuer Dashboard Simulation
     await runTest('issuerDashboard', async () => {
-      const issuer = simulateIssuerLogin()
-      if (!issuer) throw new Error('Failed to simulate issuer login')
-      console.log('✅ Issuer dashboard simulation successful')
+      try {
+        // Test 1: Simulate issuer login
+        const issuer = simulateIssuerLogin()
+        if (!issuer) {
+          throw new Error('simulateIssuerLogin returned null or undefined')
+        }
+        if (!issuer.id || !issuer.email) {
+          throw new Error('Invalid issuer data structure')
+        }
+
+        // Test 2: Verify issuer data structure
+        const requiredFields = ['id', 'email', 'role', 'verificationStatus', 'organizationName']
+        for (const field of requiredFields) {
+          if (!issuer[field]) {
+            throw new Error(`Missing required field: ${field}`)
+          }
+        }
+
+        // Test 3: Verify role is valid issuer role
+        const validIssuerRoles = ['Educational', 'Company', 'CertificationBody', 'NGO', 'Platform']
+        const issuerRole = Object.keys(issuer.role)[0]
+        if (!validIssuerRoles.includes(issuerRole)) {
+          throw new Error(`Invalid issuer role: ${issuerRole}`)
+        }
+
+        // Test 4: Verify verification status
+        const verificationStatus = Object.keys(issuer.verificationStatus)[0]
+        if (verificationStatus !== 'Approved') {
+          throw new Error(`Issuer not approved: ${verificationStatus}`)
+        }
+
+        console.log('✅ Issuer dashboard simulation successful:', {
+          id: issuer.id,
+          email: issuer.email,
+          role: issuerRole,
+          organizationName: issuer.organizationName,
+          status: verificationStatus
+        })
+      } catch (error) {
+        console.error('❌ Issuer dashboard test failed:', error)
+        throw error
+      }
     })
 
     // Test 3: Search Functionality
@@ -77,7 +116,39 @@ export default function TestDemoPage() {
       console.log('✅ Certificate download test prepared:', testData)
     })
 
-    // Test 5: Role-based Navigation
+    // Test 5: IC Canister Connection
+    await runTest('icConnection', async () => {
+      try {
+        // Test canister ID configuration
+        const canisterId = process.env.NEXT_PUBLIC_CREDENTIAL_NFT_CANISTER_ID
+        if (!canisterId) {
+          throw new Error('NEXT_PUBLIC_CREDENTIAL_NFT_CANISTER_ID not configured')
+        }
+        if (canisterId !== 'k7fau-4yaaa-aaaao-qkb2a-cai') {
+          throw new Error(`Incorrect canister ID: ${canisterId}`)
+        }
+
+        // Test IC host configuration
+        const icHost = process.env.NEXT_PUBLIC_IC_HOST
+        if (!icHost) {
+          throw new Error('NEXT_PUBLIC_IC_HOST not configured')
+        }
+        if (icHost !== 'https://ic0.app') {
+          throw new Error(`Incorrect IC host: ${icHost}`)
+        }
+
+        console.log('✅ IC canister connection configuration verified:', {
+          canisterId,
+          icHost,
+          network: process.env.NEXT_PUBLIC_DFX_NETWORK
+        })
+      } catch (error) {
+        console.error('❌ IC connection test failed:', error)
+        throw error
+      }
+    })
+
+    // Test 6: Role-based Navigation
     await runTest('roleNavigation', async () => {
       const individualUrl = '/dashboard'
       const issuerUrl = '/issuer-dashboard'
@@ -148,6 +219,7 @@ export default function TestDemoPage() {
               { key: 'issuerDashboard', name: 'Issuer Dashboard', desc: 'Token generation and file upload simulation' },
               { key: 'searchFunction', name: 'Search Functionality', desc: 'Token search and credential display' },
               { key: 'certificateDownload', name: 'Certificate Download', desc: 'PNG generation and download' },
+              { key: 'icConnection', name: 'IC Canister Connection', desc: 'Canister ID and network configuration' },
               { key: 'roleNavigation', name: 'Role-based Navigation', desc: 'Individual vs Issuer dashboard routing' }
             ].map((test) => (
               <div key={test.key} className="flex items-center justify-between p-3 border rounded">
@@ -159,11 +231,15 @@ export default function TestDemoPage() {
                   </div>
                 </div>
                 <Badge variant={
-                  testResults[test.key] === 'success' ? 'default' : 
-                  testResults[test.key] === 'error' ? 'destructive' : 
+                  testResults[test.key] === 'success' ? 'default' :
+                  testResults[test.key] === 'error' ? 'destructive' :
+                  testResults[test.key] === 'pending' ? 'outline' :
                   'secondary'
                 }>
-                  {testResults[test.key] || 'Not Run'}
+                  {testResults[test.key] === 'success' ? 'SUCCESS' :
+                   testResults[test.key] === 'error' ? 'ERROR' :
+                   testResults[test.key] === 'pending' ? 'RUNNING' :
+                   'NOT RUN'}
                 </Badge>
               </div>
             ))}

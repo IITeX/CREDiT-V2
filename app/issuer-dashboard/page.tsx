@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,6 +31,7 @@ import { useUserManagement, useCredentials } from "@/hooks/useIC"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { TokenGenerationModal } from "@/components/issuer/token-generation-modal"
 import { CertificateTemplateSelector } from "@/components/issuer/certificate-template-selector"
+import { useToast } from "@/hooks/use-toast"
 
 export default function IssuerDashboardPage() {
   return (
@@ -46,22 +47,50 @@ export default function IssuerDashboardPage() {
 function IssuerDashboardContent() {
   const { principal } = useAuth()
   const router = useRouter()
+  const { toast } = useToast()
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false)
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
   const [generatedTokens, setGeneratedTokens] = useState<string[]>([])
   const [tokenFiles, setTokenFiles] = useState<{[key: string]: File | null}>({})
   const [isSaving, setIsSaving] = useState(false)
+  const [issuerCredentials, setIssuerCredentials] = useState<any[]>([])
+  const [stats, setStats] = useState({
+    totalTokens: 0,
+    activeCredentials: 0,
+    recipients: 0
+  })
 
   // ICP hooks
   const { user, getMyProfile, loading: userLoading } = useUserManagement()
-  const { createCredential } = useCredentials()
+  const { createCredential, createSoulBoundToken, getCredentialsByIssuer, loading: credentialsLoading } = useCredentials()
 
-  // Load user data on mount
+  // Function to fetch issuer's credentials
+  const fetchIssuerCredentials = useCallback(async () => {
+    if (!principal) return
+
+    try {
+      const credentials = await getCredentialsByIssuer()
+      setIssuerCredentials(credentials)
+
+      // Calculate stats
+      const uniqueRecipients = new Set(credentials.map(c => c.recipient)).size
+      setStats({
+        totalTokens: credentials.length,
+        activeCredentials: credentials.filter(c => !c.isRevoked).length,
+        recipients: uniqueRecipients
+      })
+    } catch (error) {
+      console.error('Error fetching issuer credentials:', error)
+    }
+  }, [principal, getCredentialsByIssuer])
+
+  // Load user data and credentials on mount
   useEffect(() => {
     if (principal) {
       getMyProfile().catch(console.error)
+      fetchIssuerCredentials()
     }
-  }, [principal, getMyProfile])
+  }, [principal, getMyProfile, fetchIssuerCredentials])
 
   // Redirect non-issuers to individual dashboard
   useEffect(() => {
@@ -128,12 +157,19 @@ function IssuerDashboardContent() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    // You could add a toast notification here
+    toast({
+      title: "Copied!",
+      description: "Token ID copied to clipboard",
+    })
   }
 
   const handleSaveTokens = async () => {
     if (!principal || !user) {
-      alert('Authentication required. Please login first.')
+      toast({
+        title: "Authentication Required",
+        description: "Please login first to save tokens",
+        variant: "destructive",
+      })
       return
     }
 
@@ -161,13 +197,14 @@ function IssuerDashboardContent() {
           type: 'issuer-created'
         }
 
-        // Create credential using the existing hook
-        const result = await createCredential(
+        // Create Soul Bound Token for issuer-created certificates
+        const result = await createSoulBoundToken(
           { IssuerCertificate: null }, // Credential type for issuer-created certificates
           `Certificate - ${tokenId}`, // Title
           `Certificate issued by ${getRoleDisplayName()}`, // Description
           'pending-recipient', // Recipient (to be assigned later)
           'Pending Assignment', // Recipient name
+          Object.keys(user.role)[0], // Issuer role
           metadata, // Metadata
           [], // Document hash (empty for now)
           [] // Expires at (optional)
@@ -181,14 +218,26 @@ function IssuerDashboardContent() {
       const results = await Promise.all(savePromises)
 
       console.log('All tokens saved successfully:', results)
-      alert(`Successfully saved ${generatedTokens.length} tokens to the blockchain!`)
+
+      toast({
+        title: "Success! 🎉",
+        description: `Successfully saved ${generatedTokens.length} token${generatedTokens.length > 1 ? 's' : ''} to the blockchain!`,
+        variant: "default",
+      })
 
       // Reset state after successful save
       setGeneratedTokens([])
       setTokenFiles({})
+
+      // Refresh issuer credentials to update stats
+      await fetchIssuerCredentials()
     } catch (error) {
       console.error('Error saving tokens:', error)
-      alert(`Failed to save tokens: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast({
+        title: "Error Saving Tokens",
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        variant: "destructive",
+      })
     } finally {
       setIsSaving(false)
     }
@@ -378,7 +427,9 @@ function IssuerDashboardContent() {
               <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">
+                {credentialsLoading ? '...' : stats.totalTokens}
+              </div>
               <p className="text-xs text-muted-foreground">Generated tokens</p>
             </CardContent>
           </Card>
@@ -388,7 +439,9 @@ function IssuerDashboardContent() {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">
+                {credentialsLoading ? '...' : stats.activeCredentials}
+              </div>
               <p className="text-xs text-muted-foreground">Verified credentials</p>
             </CardContent>
           </Card>
@@ -398,11 +451,73 @@ function IssuerDashboardContent() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">
+                {credentialsLoading ? '...' : stats.recipients}
+              </div>
               <p className="text-xs text-muted-foreground">Credential holders</p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Issued Tokens List */}
+        {isUserVerified && issuerCredentials.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Award className="h-5 w-5" />
+                <span>Your Issued Tokens</span>
+              </CardTitle>
+              <CardDescription>
+                Tokens and credentials you have created and issued
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {issuerCredentials.slice(0, 10).map((credential, index) => {
+                  // Extract token ID from metadata
+                  const tokenIdMeta = credential.metadata?.find((m: any) => m[0] === 'tokenId')
+                  const tokenId = tokenIdMeta ? tokenIdMeta[1] : `Token-${index + 1}`
+
+                  return (
+                    <div key={credential.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          <Award className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{tokenId}</h4>
+                          <p className="text-sm text-muted-foreground">{credential.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Issued: {new Date(Number(credential.issuedAt) / 1000000).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant={credential.isRevoked ? "destructive" : "default"}>
+                          {credential.isRevoked ? "Revoked" : "Active"}
+                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(tokenId)}
+                        >
+                          Copy ID
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })}
+                {issuerCredentials.length > 10 && (
+                  <div className="text-center pt-4">
+                    <p className="text-sm text-muted-foreground">
+                      Showing 10 of {issuerCredentials.length} tokens
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Modals */}
