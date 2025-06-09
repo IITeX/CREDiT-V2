@@ -235,6 +235,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Production IC deployment** with real blockchain integration
 - **Comprehensive testing framework** ensuring reliability
 - **Advanced search and verification** with differentiated results
+  
+## ‼️ Important Note
+> Since there's an issue on integrating the ICP Internet Identity on our system, managing the users verification isn't possible as of now hence we've created these bypass routes for demo purposes of the functionality of our system if the user has been successfully verified.
+> 
+> If you want to explore the website use these bypass routes:
+> 
+> (e.g. https://credit.zaide.online/dashboard-direct)
+> 
+> - **Individual** - `/dashboard-direct`
+> - **Issuer** - `/issuer-direct` and `/issuer-notification`
+> - **Admin** - `/admin-direct`
 
 ---
 
