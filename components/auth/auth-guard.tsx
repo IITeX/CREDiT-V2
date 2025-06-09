@@ -52,7 +52,7 @@ export function AuthGuard({ children, fallback, requireRegistration = true, allo
       // Check if user is registered in our system
       try {
         const profile = await getMyProfile()
-        
+
         if (profile) {
           // Check role permissions if specified
           if (allowedRoles && profile.role) {
@@ -63,7 +63,7 @@ export function AuthGuard({ children, fallback, requireRegistration = true, allo
               return
             }
           }
-          
+
           setAuthState('authorized')
         } else {
           setAuthState('registration-required')
@@ -83,13 +83,26 @@ export function AuthGuard({ children, fallback, requireRegistration = true, allo
             setAuthState('registration-required')
           }
         } else {
-          // In production, require proper registration
-          if (err.message?.includes('User not found') || err.message?.includes('NotFound')) {
-            setAuthState('registration-required')
+          if (process.env.NEXT_PUBLIC_ENABLE_DEV_LOGIN === 'true') {
+            console.log('Development mode: allowing access despite backend error')
+            // Check if this is the admin principal - if so, allow access
+            const adminPrincipal = "g5pqo-7ihb2-4vqek-pou4f-pauhm-tfylr-qcvnb-f5fnp-lfjs5-i7xtv-pae"
+            if (principal?.toString() === adminPrincipal) {
+              console.log('Admin principal detected - allowing access')
+              setAuthState('authorized')
+            } else {
+              setAuthState('registration-required')
+            }
           } else {
-            // Other errors in production - still allow access but log the error
-            setAuthState('authorized')
+            // In production, require proper registration
+            if (err.message?.includes('User not found') || err.message?.includes('NotFound')) {
+              setAuthState('registration-required')
+            } else {
+              // Other errors in production - still allow access but log the error
+              setAuthState('authorized')
+            }
           }
+
         }
       }
     }
@@ -173,7 +186,7 @@ export function AuthGuard({ children, fallback, requireRegistration = true, allo
               Complete your registration to start managing verifiable credentials
             </p>
           </div>
-          
+
           <ICPRegistrationForm onSuccess={handleRegistrationSuccess} />
         </div>
       </div>
@@ -201,7 +214,7 @@ export function AuthGuard({ children, fallback, requireRegistration = true, allo
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <Button onClick={() => window.location.href = '/dashboard'} className="w-full">
               Return to Dashboard
             </Button>
