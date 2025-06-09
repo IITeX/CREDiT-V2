@@ -44,6 +44,7 @@ export function createICAgent(identity?: Identity): HttpAgent {
   agentOptions.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = {
       'Content-Type': 'application/cbor',
+      'Accept': 'application/cbor',
       ...init?.headers
     }
 
@@ -51,7 +52,8 @@ export function createICAgent(identity?: Identity): HttpAgent {
       ...init,
       headers,
       mode: 'cors',
-      credentials: 'omit'
+      credentials: 'omit',
+      cache: 'no-cache'
     })
   }
 

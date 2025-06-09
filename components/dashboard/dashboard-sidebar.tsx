@@ -26,6 +26,7 @@ import {
   Users,
   X,
   LogOut,
+  Bell,
 } from "lucide-react"
 
 interface DashboardSidebarProps {
@@ -90,6 +91,13 @@ const issuerNavigation = [
     icon: FileText,
     description: "Create certificates",
     external: true,
+  },
+  {
+    name: "Notifications",
+    href: "/issuer-notification",
+    icon: Bell,
+    description: "Credential requests",
+    badge: 3, // This will be dynamic
   },
   {
     name: "Recipients",
@@ -209,7 +217,7 @@ export function DashboardSidebar({
         {navigation.map((item) => {
           const IconComponent = item.icon
           const isActive = pathname === item.href
-          
+
           return (
             <Link
               key={item.name}
@@ -223,9 +231,26 @@ export function DashboardSidebar({
               )}
               {...(item.external && { target: "_blank", rel: "noopener noreferrer" })}
             >
-              <IconComponent className="h-4 w-4" />
+              <div className="relative">
+                <IconComponent className="h-4 w-4" />
+                {item.badge && item.badge > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center"
+                  >
+                    {item.badge}
+                  </Badge>
+                )}
+              </div>
               <div className="flex-1">
-                <div>{item.name}</div>
+                <div className="flex items-center justify-between">
+                  <span>{item.name}</span>
+                  {item.badge && item.badge > 0 && (
+                    <Badge variant="destructive" className="ml-2 text-xs">
+                      {item.badge}
+                    </Badge>
+                  )}
+                </div>
                 <div className="text-xs text-gray-500">{item.description}</div>
               </div>
             </Link>

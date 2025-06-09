@@ -45,23 +45,9 @@ const nextConfig = {
     unoptimized: true,
   },
   
-  // Handle static file serving
+  // Handle static file serving - CORS headers removed for IC Network compatibility
   async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp',
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
-        ],
-      },
-    ]
+    return []
   },
 }
 
